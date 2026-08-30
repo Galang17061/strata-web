@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/brand/empty-state";
 import { EmptyBlocksIllustration } from "@/components/brand/illustrations";
 import { PageLoader } from "@/components/brand/loader";
 import { LayerCrumbs } from "@/components/layers/layer-crumbs";
+import { CountUp } from "@/components/motion/count-up";
 import { ReliabilityBadge } from "@/components/reliability/reliability-badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -50,10 +51,32 @@ import {
 } from "@/features/workspace/model";
 import { TreePanel, type TreeAction } from "@/features/workspace/tree-panel";
 import { useWorkspaceStore } from "@/features/workspace/workspace-store";
+import { formatReliability } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
+import { reliabilityBand } from "@/lib/reliability";
 import { cn } from "@/lib/utils";
 
 const emptyNodes: CanvasNode[] = [];
+
+const fourDecimals = (value: number) => formatReliability(value, 4);
+
+function SystemTotalChip({ value }: { value: number | null }) {
+  const band = reliabilityBand(value);
+  return (
+    <span
+      data-band={band}
+      className="inline-flex h-6 items-center gap-1.5 rounded-pill border border-border bg-surface-sunken px-2.5 text-caption text-foreground-muted"
+      title={`Whole system: ${formatReliability(value, 8)}`}
+    >
+      System
+      {value === null ? (
+        <span className="font-mono normal-case tracking-normal">—</span>
+      ) : (
+        <CountUp key={value} value={value} format={fourDecimals} immediate className="text-foreground" />
+      )}
+    </span>
+  );
+}
 const emptyEdges: CanvasEdge[] = [];
 
 export function WorkspaceScreen() {
@@ -112,7 +135,7 @@ export function WorkspaceScreen() {
   const systemValues = useQuery({
     queryKey: queryKeys.systems.total(rbdSystemId),
     queryFn: () => systemTotal(rbdSystemId),
-    enabled: Boolean(rbdSystemId) && activeLevel.scope === "system",
+    enabled: Boolean(rbdSystemId),
     retry: false,
   });
   const hierarchyValues = useQuery({
@@ -330,6 +353,7 @@ export function WorkspaceScreen() {
           className="min-w-0 flex-1"
         />
         <ReliabilityBadge value={summary.value} size="sm" />
+        {activeLevel.scope === "hierarchy" ? <SystemTotalChip value={systemValues.data?.data?.reliabilityTotal ?? null} /> : null}
         <div className="ml-auto flex items-center gap-2">
           {dirty ? <span className="text-caption text-warning normal-case tracking-normal">Unsaved changes</span> : null}
           <PermissionGate moduleName={MODULES.DESIGN_FOR_RELIABILITY} permission="update">

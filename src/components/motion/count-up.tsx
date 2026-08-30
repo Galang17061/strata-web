@@ -12,6 +12,7 @@ type CountUpProps = {
   duration?: number;
   className?: string;
   active?: boolean;
+  immediate?: boolean;
   as?: "span" | "text" | "tspan";
 };
 
@@ -24,16 +25,18 @@ export function CountUp({
   duration,
   className,
   active = true,
+  immediate = false,
   as = "span",
 }: CountUpProps) {
   const tokens = useMotionTokens();
   const reduced = useReducedMotion();
   const ref = useRef<HTMLSpanElement | SVGTextElement | SVGTSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-10% 0px" });
+  const ready = immediate || inView;
   const [display, setDisplay] = useState(() => format(reduced ? value : 0));
 
   useEffect(() => {
-    if (!inView || !active) return;
+    if (!ready || !active) return;
     if (reduced) {
       setDisplay(format(value));
       return;
@@ -45,7 +48,7 @@ export function CountUp({
       onUpdate: (latest) => setDisplay(format(latest)),
     });
     return () => controls.stop();
-  }, [inView, active, value, delay, duration, reduced, format, tokens]);
+  }, [ready, active, value, delay, duration, reduced, format, tokens]);
 
   if (as === "text") {
     return (
