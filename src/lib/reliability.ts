@@ -12,6 +12,14 @@ export const reliabilityLabels: Record<ReliabilityBand, string> = {
   none: "N/A",
 };
 
+export const reliabilityThresholds: { band: ReliabilityBand; from: number; to: number }[] = [
+  { band: "high", from: 0.86, to: 1 },
+  { band: "good", from: 0.76, to: 0.86 },
+  { band: "moderate", from: 0.5, to: 0.76 },
+  { band: "low", from: 0.1, to: 0.5 },
+  { band: "none", from: 0, to: 0.1 },
+];
+
 export function reliabilityBand(value: unknown): ReliabilityBand {
   const parsed = toNumber(value);
   if (parsed === null) return "none";

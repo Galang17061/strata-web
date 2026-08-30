@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { SystemTree } from "@/features/projects/types";
 import type { Level } from "@/features/workspace/model";
 import { useLevelPlot } from "@/features/workspace/plot/use-level-plot";
 import { formatCount, formatHours, formatReliability } from "@/lib/format";
+import { reliabilityLabels, reliabilityThresholds } from "@/lib/reliability";
 
 type PlotDialogProps = {
   open: boolean;
@@ -52,6 +53,23 @@ export function PlotDialog({ open, onOpenChange, tree, level }: PlotDialogProps)
                       <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
+                  {reliabilityThresholds.map((threshold) => (
+                    <ReferenceArea
+                      key={threshold.band}
+                      y1={threshold.from}
+                      y2={threshold.to}
+                      fill={`var(--rel-${threshold.band})`}
+                      fillOpacity={0.07}
+                      stroke="none"
+                      label={{
+                        value: reliabilityLabels[threshold.band],
+                        position: "insideTopRight",
+                        fill: `var(--rel-${threshold.band})`,
+                        fontSize: 11,
+                        fontFamily: "var(--font-manrope)",
+                      }}
+                    />
+                  ))}
                   <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
                   <XAxis
                     dataKey="hours"
