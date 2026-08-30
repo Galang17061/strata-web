@@ -4,6 +4,7 @@ import { Boxes } from "lucide-react";
 import { Sheet, SheetBody, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CanvasNode } from "@/features/workspace/model";
+import { CurveTab } from "@/features/workspace/sheet/curve-tab";
 import { FailuresTab } from "@/features/workspace/sheet/failures-tab";
 import { ParametersTab } from "@/features/workspace/sheet/parameters-tab";
 import { PropertiesTab } from "@/features/workspace/sheet/properties-tab";
@@ -57,6 +58,8 @@ export function ComponentSheet({ node, open, canEdit, onOpenChange }: ComponentS
                   <FailuresTab key={node.data.entityId} systemComponentId={node.data.entityId} canEdit={canEdit} />
                 ) : tab.value === "parameters" && node ? (
                   <ParametersTab key={node.data.entityId} systemComponentId={node.data.entityId} canEdit={canEdit} />
+                ) : tab.value === "curve" && node ? (
+                  <CurveTab key={node.data.entityId} systemComponentId={node.data.entityId} canEdit={canEdit} />
                 ) : (
                   <p className="text-body-sm text-foreground-muted">{tab.hint}</p>
                 )}
