@@ -1,14 +1,21 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import type { SortingState } from "@tanstack/react-table";
-import { Search } from "lucide-react";
+import type { SortingState, VisibilityState } from "@tanstack/react-table";
+import { Columns3, Rows2, Rows3, Search } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { listMasterComponents } from "@/features/master-data/api";
-import { ComponentsTable } from "@/features/master-data/components-table";
+import { ComponentsTable, hideableColumns } from "@/features/master-data/components-table";
 import { MasterDataTabs } from "@/features/master-data/master-data-tabs";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
@@ -23,6 +30,8 @@ export function ComponentsScreen() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [sorting, setSortingState] = useState<SortingState>([{ id: "componentName", desc: false }]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [dense, setDense] = useState(false);
   const sort = sorting[0];
 
   const [lastSearch, setLastSearch] = useState(debounced);
@@ -65,6 +74,36 @@ export function ComponentsScreen() {
             className="pl-9"
           />
         </div>
+        <div className="ml-auto flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="sm">
+                <Columns3 /> Columns
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Show columns</DropdownMenuLabel>
+              {hideableColumns.map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  checked={columnVisibility[column.id] !== false}
+                  onCheckedChange={(checked) => setColumnVisibility((current) => ({ ...current, [column.id]: checked }))}
+                >
+                  {column.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            variant="secondary"
+            size="sm"
+            aria-pressed={dense}
+            aria-label={dense ? "Loosen the rows" : "Tighten the rows"}
+            onClick={() => setDense((current) => !current)}
+          >
+            {dense ? <Rows3 /> : <Rows2 />} {dense ? "Compact" : "Comfortable"}
+          </Button>
+        </div>
       </div>
       <ComponentsTable
         rows={rows}
@@ -82,6 +121,9 @@ export function ComponentsScreen() {
           ) : undefined
         }
         searching={Boolean(debounced)}
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={setColumnVisibility}
+        dense={dense}
       />
       {rows.length > 0 || page > 1 ? (
         <TablePagination

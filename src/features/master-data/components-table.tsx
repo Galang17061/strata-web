@@ -7,6 +7,7 @@ import {
   useReactTable,
   type OnChangeFn,
   type SortingState,
+  type VisibilityState,
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
@@ -34,9 +35,28 @@ type ComponentsTableProps = {
   onSortingChange: OnChangeFn<SortingState>;
   searching?: boolean;
   emptyAction?: ReactNode;
+  columnVisibility: VisibilityState;
+  onColumnVisibilityChange: OnChangeFn<VisibilityState>;
+  dense?: boolean;
 };
 
-export function ComponentsTable({ rows, loading = false, sorting, onSortingChange, searching = false, emptyAction }: ComponentsTableProps) {
+export const hideableColumns = [
+  { id: "manufacturerName", label: "Vendor" },
+  { id: "failureRate", label: "Failure rate" },
+  { id: "cost", label: "Cost" },
+];
+
+export function ComponentsTable({
+  rows,
+  loading = false,
+  sorting,
+  onSortingChange,
+  searching = false,
+  emptyAction,
+  columnVisibility,
+  onColumnVisibilityChange,
+  dense = false,
+}: ComponentsTableProps) {
   const columns = useMemo(
     () => [
       columnHelper.accessor("componentName", {
@@ -44,7 +64,7 @@ export function ComponentsTable({ rows, loading = false, sorting, onSortingChang
         cell: (info) => (
           <div className="flex flex-col">
             <span className="font-medium text-foreground">{info.getValue()}</span>
-            {info.row.original.serialNumber ? (
+            {info.row.original.serialNumber && !dense ? (
               <span className="font-mono text-caption text-foreground-muted">{info.row.original.serialNumber}</span>
             ) : null}
           </div>
@@ -66,14 +86,15 @@ export function ComponentsTable({ rows, loading = false, sorting, onSortingChang
         cell: (info) => formatMoney(info.getValue()),
       }),
     ],
-    [],
+    [dense],
   );
 
   const table = useReactTable({
     data: rows,
     columns,
-    state: { sorting },
+    state: { sorting, columnVisibility },
     onSortingChange,
+    onColumnVisibilityChange,
     manualSorting: true,
     enableMultiSort: false,
     getCoreRowModel: getCoreRowModel(),
@@ -109,7 +130,7 @@ export function ComponentsTable({ rows, loading = false, sorting, onSortingChang
   }
 
   return (
-    <Table>
+    <Table dense={dense}>
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id} className="hover:bg-transparent">
