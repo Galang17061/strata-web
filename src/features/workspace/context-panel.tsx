@@ -60,9 +60,6 @@ function InputParameters({ parameters, onPickCode }: { parameters: ComponentInpu
               λ
             </TableHead>
             <TableHead numeric className="normal-case">
-              t
-            </TableHead>
-            <TableHead numeric className="normal-case">
               R
             </TableHead>
           </TableRow>
@@ -74,12 +71,13 @@ function InputParameters({ parameters, onPickCode }: { parameters: ComponentInpu
               className={cn(onPickCode && "cursor-pointer")}
               onClick={() => parameter.formulaCode && onPickCode?.(parameter.formulaCode)}
             >
-              <TableCell className="max-w-32">
+              <TableCell className="max-w-0 w-full">
                 <span className="block truncate">{parameter.componentName}</span>
-                <span className="block font-mono text-caption tracking-normal text-foreground-subtle">{parameter.formulaCode}</span>
+                <span className="block truncate font-mono text-caption tracking-normal text-foreground-subtle">
+                  {parameter.formulaCode} · {formatCount(parameter.runningHours)} h
+                </span>
               </TableCell>
               <TableCell numeric>{formatFailureRate(parameter.failureRate)}</TableCell>
-              <TableCell numeric>{formatCount(parameter.runningHours)}</TableCell>
               <TableCell numeric>{formatReliability(parameter.componentReliability)}</TableCell>
             </TableRow>
           ))}

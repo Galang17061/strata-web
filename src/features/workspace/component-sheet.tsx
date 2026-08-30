@@ -8,6 +8,7 @@ import { CurveTab } from "@/features/workspace/sheet/curve-tab";
 import { FailuresTab } from "@/features/workspace/sheet/failures-tab";
 import { ParametersTab } from "@/features/workspace/sheet/parameters-tab";
 import { PropertiesTab } from "@/features/workspace/sheet/properties-tab";
+import { useWorkspaceStore } from "@/features/workspace/workspace-store";
 
 type ComponentSheetProps = {
   node: CanvasNode | null;
@@ -24,16 +25,18 @@ const tabs = [
 ] as const;
 
 export function ComponentSheet({ node, open, canEdit, onOpenChange }: ComponentSheetProps) {
+  const sheetTab = useWorkspaceStore((state) => state.sheetTab);
+  const setSheetTab = useWorkspaceStore((state) => state.setSheetTab);
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="p-0">
+      <SheetContent side="right" className="p-0 sm:max-w-(--sheet-width)">
         <SheetHeader>
           <div className="flex items-start gap-3">
             <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm bg-accent text-accent-foreground">
               <Boxes className="size-4" aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <SheetTitle className="truncate">{node?.data.name ?? "Component"}</SheetTitle>
+              <SheetTitle className="truncate pr-6">{node?.data.name ?? "Component"}</SheetTitle>
               <SheetDescription className="font-mono tracking-normal">
                 {node?.data.code}
                 {node?.data.vendor ? ` · ${node.data.vendor}` : ""}
@@ -41,8 +44,8 @@ export function ComponentSheet({ node, open, canEdit, onOpenChange }: ComponentS
             </div>
           </div>
         </SheetHeader>
-        <Tabs defaultValue="properties" className="min-h-0 flex-1 gap-0">
-          <TabsList className="px-6">
+        <Tabs value={sheetTab} onValueChange={setSheetTab} className="min-h-0 flex-1 gap-0">
+          <TabsList className="overflow-x-auto px-4 sm:px-6">
             {tabs.map((tab) => (
               <TabsTrigger key={tab.value} value={tab.value}>
                 {tab.label}
