@@ -6,6 +6,9 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  css: {
+    postcss: { plugins: [] },
+  },
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
