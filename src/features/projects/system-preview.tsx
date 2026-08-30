@@ -82,10 +82,12 @@ export function SystemPreview({ rbdSystemId }: { rbdSystemId: string }) {
   const nodes = useQuery({
     queryKey: queryKeys.drawing.nodes("system", rbdSystemId),
     queryFn: () => listDrawingNodes("system", rbdSystemId),
+    staleTime: 60000,
   });
   const edges = useQuery({
     queryKey: queryKeys.drawing.edges("system", rbdSystemId),
     queryFn: () => listDrawingEdges("system", rbdSystemId),
+    staleTime: 60000,
   });
 
   if (nodes.isPending || edges.isPending) return <Skeleton className="h-24 w-full" />;
@@ -105,16 +107,27 @@ export function SystemPreview({ rbdSystemId }: { rbdSystemId: string }) {
         <line key={link.id} x1={link.x1} y1={link.y1} x2={link.x2} y2={link.y2} className="stroke-border-strong" strokeWidth={2} />
       ))}
       {layout.boxes.map((box) => (
-        <rect
-          key={box.id}
-          x={box.x}
-          y={box.y}
-          width={box.width}
-          height={box.height}
-          rx={box.virtual ? box.height / 2 : 8}
-          className={box.virtual ? "fill-surface stroke-border" : "fill-surface stroke-border-strong"}
-          strokeWidth={2}
-        />
+        <g key={box.id}>
+          <rect
+            x={box.x}
+            y={box.y}
+            width={box.width}
+            height={box.height}
+            rx={box.virtual ? box.height / 2 : 8}
+            className={box.virtual ? "fill-surface stroke-border" : "fill-surface stroke-border-strong"}
+            strokeWidth={2}
+          />
+          <text
+            x={box.x + box.width / 2}
+            y={box.y + box.height / 2}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={box.virtual ? 18 : 22}
+            className={box.virtual ? "fill-foreground-subtle font-mono" : "fill-foreground-muted font-mono"}
+          >
+            {box.virtual ? (box.id.startsWith("IN") ? "IN" : "OUT") : box.id}
+          </text>
+        </g>
       ))}
     </svg>
   );
