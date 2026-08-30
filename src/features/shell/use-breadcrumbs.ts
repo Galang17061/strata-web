@@ -12,6 +12,14 @@ export function useBreadcrumbs(crumbs: Crumb[]): void {
   }, [key, setBreadcrumbs]);
 }
 
+export function useFullBleed(): void {
+  const setFullBleed = useUiStore((state) => state.setFullBleed);
+  useEffect(() => {
+    setFullBleed(true);
+    return () => setFullBleed(false);
+  }, [setFullBleed]);
+}
+
 export function usePaletteScope(scope: string, items: PaletteItem[]): void {
   const setPaletteScope = useUiStore((state) => state.setPaletteScope);
   const key = JSON.stringify(items.map((item) => [item.id, item.label, item.hint, item.href, item.keywords]));

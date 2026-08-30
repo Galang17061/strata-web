@@ -263,6 +263,58 @@ html.theme-fading * {
   animation: strata-shimmer var(--dur-shimmer) linear infinite;
 }
 
+.react-flow {
+  --xy-background-color: var(--background);
+  --xy-background-pattern-color: var(--border);
+  --xy-edge-stroke: var(--foreground-subtle);
+  --xy-edge-stroke-selected: var(--primary);
+  --xy-edge-stroke-width: 1.75;
+  --xy-connectionline-stroke: var(--primary);
+  --xy-handle-background-color: var(--primary);
+  --xy-handle-border-color: var(--surface);
+  --xy-minimap-background-color: var(--surface);
+  --xy-minimap-mask-background-color: color-mix(in srgb, var(--foreground) 8%, transparent);
+  --xy-minimap-node-background-color: var(--border-strong);
+  --xy-minimap-node-stroke-color: transparent;
+  --xy-controls-button-background-color: var(--surface);
+  --xy-controls-button-background-color-hover: var(--surface-sunken);
+  --xy-controls-button-color: var(--foreground-muted);
+  --xy-controls-button-color-hover: var(--foreground);
+  --xy-controls-button-border-color: var(--border);
+  --xy-controls-box-shadow: var(--shadow-sm);
+  --xy-selection-background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+  --xy-selection-border: 1px dashed var(--primary);
+  --xy-node-boxshadow-selected: 0 0 0 2px var(--ring);
+  --xy-attribution-background-color: transparent;
+}
+
+.react-flow .react-flow__minimap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.react-flow .react-flow__controls {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.react-flow .react-flow__attribution {
+  color: var(--foreground-subtle);
+  font-size: 0.625rem;
+}
+
+@keyframes edge-flow {
+  to { stroke-dashoffset: -16; }
+}
+
+.react-flow .react-flow__edge.selected .edge-path,
+.react-flow .react-flow__edge:hover .edge-path {
+  stroke: var(--primary);
+  stroke-dasharray: 6 4;
+  animation: edge-flow 1.2s linear infinite;
+}
+
 @keyframes reliability-pulse {
   0%, 100% { box-shadow: 0 0 0 0 transparent; }
   50% { box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 28%, transparent); }
@@ -289,6 +341,11 @@ html.theme-fading * {
   }
 
   .reliability-badge[data-pulse="true"] {
+    animation: none;
+  }
+
+  .react-flow .react-flow__edge.selected .edge-path,
+  .react-flow .react-flow__edge:hover .edge-path {
     animation: none;
   }
 }

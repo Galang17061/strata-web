@@ -26,8 +26,9 @@ function MobileNav() {
   );
 }
 
-export function AppShell({ children, fullBleed = false }: { children: ReactNode; fullBleed?: boolean }) {
+export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const fullBleed = useUiStore((state) => state.fullBleed);
 
   useEffect(() => {
     useUiStore.persist.rehydrate();
@@ -40,7 +41,7 @@ export function AppShell({ children, fullBleed = false }: { children: ReactNode;
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar />
-          <main className={cn("flex-1", fullBleed ? "flex flex-col" : "mx-auto w-full max-w-content px-4 py-6 lg:px-6")}>
+          <main className={cn("flex-1", fullBleed ? "flex min-h-0 flex-col" : "mx-auto w-full max-w-content px-4 py-6 lg:px-6")}>
             <PageEnter key={pathname} className={cn(fullBleed && "flex min-h-0 flex-1 flex-col")}>
               {children}
             </PageEnter>

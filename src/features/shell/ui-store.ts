@@ -23,6 +23,8 @@ type UiState = {
   changePasswordOpen: boolean;
   breadcrumbs: Crumb[];
   paletteScopes: Record<string, PaletteItem[]>;
+  fullBleed: boolean;
+  setFullBleed: (fullBleed: boolean) => void;
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   setHydrated: () => void;
@@ -43,6 +45,8 @@ export const useUiStore = create<UiState>()(
       changePasswordOpen: false,
       breadcrumbs: [],
       paletteScopes: {},
+      fullBleed: false,
+      setFullBleed: (fullBleed) => set({ fullBleed }),
       toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
       setHydrated: () => set({ hydrated: true }),
