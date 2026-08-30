@@ -1,7 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { accessOfUser } from "@/features/account/api";
+import { accessOfUser, saveAccess } from "@/features/account/api";
 import type { User, UserAccessEntry } from "@/features/account/types";
 import { MODULES, permissionsFor, type ModuleName } from "@/features/auth/roles";
 import { queryKeys } from "@/lib/query-keys";
@@ -41,7 +42,7 @@ type RightKey = (typeof rights)[number]["key"];
 export function matrixFor(user: User, saved: UserAccessEntry[]): UserAccessEntry[] {
   return Object.values(MODULES).map((moduleName) => {
     const found = saved.find((entry) => entry.modul.toLowerCase() === moduleName);
-    if (found) return { ...found, modul: moduleName };
+    if (found) return { ...found, userId: user.id, modul: moduleName };
     const implied = permissionsFor({ roleName: user.roleName ?? "", accessData: [] }, moduleName);
     return {
       userId: user.id,
@@ -62,6 +63,7 @@ type AccessSheetProps = {
 
 export function AccessSheet({ user, onOpenChange }: AccessSheetProps) {
   const open = user !== null;
+  const queryClient = useQueryClient();
   const saved = useQuery({
     queryKey: queryKeys.users.access(user?.id ?? ""),
     queryFn: () => accessOfUser(user?.id ?? ""),
@@ -76,6 +78,16 @@ export function AccessSheet({ user, onOpenChange }: AccessSheetProps) {
   const toggle = (moduleName: string, key: RightKey, value: boolean) => {
     setRows((current) => current.map((row) => (row.modul === moduleName ? { ...row, [key]: value } : row)));
   };
+
+  const save = useMutation({
+    mutationFn: () => saveAccess(rows),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+      toast.success("Rights saved", { description: `${user?.fullName} gets them at their next sign-in.` });
+      onOpenChange(false);
+    },
+    onError: (error) => toast.error("Could not save the rights", { description: error.message }),
+  });
 
   const nothingSaved = saved.data !== undefined && saved.data.length === 0;
 
@@ -136,9 +148,12 @@ export function AccessSheet({ user, onOpenChange }: AccessSheetProps) {
         <SheetFooter>
           <SheetClose asChild>
             <Button type="button" variant="secondary">
-              Close
+              Cancel
             </Button>
           </SheetClose>
+          <Button type="button" loading={save.isPending} disabled={saved.isPending || rows.length === 0} onClick={() => save.mutate()}>
+            Save rights
+          </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>

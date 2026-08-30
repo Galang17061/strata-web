@@ -32,6 +32,19 @@ export async function accessOfUser(userId: string): Promise<UserAccessEntry[]> {
   }
 }
 
+export function saveAccess(entries: UserAccessEntry[]): Promise<Envelope<unknown>> {
+  const payload = entries.map(({ userId, modul, is_add, is_edit, is_delete, is_view, is_download }) => ({
+    userId,
+    modul,
+    is_add,
+    is_edit,
+    is_delete,
+    is_view,
+    is_download,
+  }));
+  return api.post<Envelope<unknown>>("/UserAccess/CreateOrUpdateMany", payload);
+}
+
 export function deleteUser(userId: string): Promise<Envelope<null>> {
   return api.delete<Envelope<null>>(`/User/${encodeURIComponent(userId)}`);
 }
