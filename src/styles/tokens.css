@@ -19,10 +19,10 @@
   --border-strong: #cbd5e1;
   --foreground: #0f172a;
   --foreground-muted: #475569;
-  --foreground-subtle: #94a3b8;
+  --foreground-subtle: #5b6b82;
 
-  --primary: var(--brand-600);
-  --primary-hover: var(--brand-700);
+  --primary: var(--brand-700);
+  --primary-hover: var(--brand-800);
   --primary-foreground: #ffffff;
   --accent: var(--brand-50);
   --accent-foreground: var(--brand-800);
@@ -102,7 +102,7 @@
   --border-strong: #334155;
   --foreground: #e6edf7;
   --foreground-muted: #93a4bf;
-  --foreground-subtle: #64748b;
+  --foreground-subtle: #7b8aa3;
 
   --primary: var(--brand-400);
   --primary-hover: var(--brand-500);

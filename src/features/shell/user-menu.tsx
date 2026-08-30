@@ -71,9 +71,9 @@ export function UserMenu({ compact = false, tone = "sidebar" }: UserMenuProps) {
             <>
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-body-sm font-medium">{user?.fullName}</span>
-                <span className="truncate text-caption capitalize text-foreground-subtle">{user?.roleName}</span>
+                <span className="truncate text-caption capitalize text-sidebar-foreground/70">{user?.roleName}</span>
               </span>
-              <ChevronsUpDown className="size-4 shrink-0 text-foreground-subtle" aria-hidden="true" />
+              <ChevronsUpDown className="size-4 shrink-0 text-sidebar-foreground/70" aria-hidden="true" />
             </>
           ) : null}
         </button>

@@ -97,7 +97,7 @@ export function SidebarContent({
         {navGroups.map((group) => (
           <div key={group.label} className="flex flex-col gap-1">
             {!collapsed ? (
-              <p className="px-3 pb-1 text-caption uppercase text-foreground-subtle">{group.label}</p>
+              <p className="px-3 pb-1 text-caption uppercase text-sidebar-foreground/70">{group.label}</p>
             ) : null}
             {group.items.map((item) => (
               <NavLink key={item.href} item={item} collapsed={collapsed} onNavigate={onNavigate} />
