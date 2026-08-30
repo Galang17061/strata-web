@@ -1,10 +1,12 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import { Columns3, Plus, Rows2, Rows3, Search } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -17,13 +19,14 @@ import { TablePagination } from "@/components/ui/table-pagination";
 import { PermissionGate } from "@/features/auth/permission-gate";
 import { MODULES } from "@/features/auth/roles";
 import { usePermissions } from "@/features/auth/session";
-import { listMasterComponents } from "@/features/master-data/api";
+import { deleteMasterComponent, listMasterComponents } from "@/features/master-data/api";
 import { ComponentDialog } from "@/features/master-data/component-dialog";
 import { ComponentsTable, hideableColumns } from "@/features/master-data/components-table";
 import type { MasterComponent } from "@/features/master-data/types";
 import { MasterDataTabs } from "@/features/master-data/master-data-tabs";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
+import { ApiError } from "@/lib/api/client";
 import { formatCount } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
 import { useDebounce } from "@/lib/use-debounce";
@@ -48,6 +51,23 @@ export function ComponentsScreen() {
     setEditing(component);
     setDialogOpen(true);
   };
+  const [removing, setRemoving] = useState<MasterComponent | null>(null);
+  const queryClient = useQueryClient();
+  const remove = useMutation({
+    mutationFn: (component: MasterComponent) => deleteMasterComponent(component.componentId),
+    onSuccess: async (_, component) => {
+      setRemoving(null);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.masterComponents.all });
+      toast.success("Component removed", { description: component.componentName });
+    },
+    onError: (error, component) =>
+      toast.error("Could not remove the component", {
+        description:
+          error instanceof ApiError && error.status >= 500
+            ? `${component.componentName} is still placed in a system. Take it out of the drawing first.`
+            : error.message,
+      }),
+  });
   const sort = sorting[0];
 
   const [lastSearch, setLastSearch] = useState(debounced);
@@ -149,6 +169,8 @@ export function ComponentsScreen() {
         dense={dense}
         canEdit={permissions.canUpdate}
         onEdit={openEdit}
+        canDelete={permissions.canDelete}
+        onDelete={setRemoving}
       />
       {rows.length > 0 || page > 1 ? (
         <TablePagination
@@ -164,6 +186,20 @@ export function ComponentsScreen() {
         />
       ) : null}
       <ComponentDialog open={dialogOpen} onOpenChange={setDialogOpen} component={editing} />
+      <ConfirmDialog
+        open={removing !== null}
+        onOpenChange={(open) => {
+          if (!open) setRemoving(null);
+        }}
+        title="Remove this component?"
+        description={removing ? `${removing.componentName} will leave the catalogue. Systems that already use it keep their own copy.` : ""}
+        confirmLabel="Remove component"
+        destructive
+        loading={remove.isPending}
+        onConfirm={() => {
+          if (removing) remove.mutate(removing);
+        }}
+      />
     </div>
   );
 }

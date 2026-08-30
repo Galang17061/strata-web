@@ -9,7 +9,7 @@ import {
   type SortingState,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ArrowUpDown, Pencil } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Pencil, Trash2 } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 import { EmptyState } from "@/components/brand/empty-state";
 import { EmptyBlocksIllustration } from "@/components/brand/illustrations";
@@ -42,6 +42,8 @@ type ComponentsTableProps = {
   dense?: boolean;
   canEdit?: boolean;
   onEdit?: (component: MasterComponent) => void;
+  canDelete?: boolean;
+  onDelete?: (component: MasterComponent) => void;
 };
 
 export const hideableColumns = [
@@ -63,6 +65,8 @@ export function ComponentsTable({
   dense = false,
   canEdit = false,
   onEdit,
+  canDelete = false,
+  onDelete,
 }: ComponentsTableProps) {
   const columns = useMemo(
     () => [
@@ -110,20 +114,34 @@ export function ComponentsTable({
         id: "actions",
         header: () => <span className="sr-only">Actions</span>,
         meta: { numeric: true },
-        cell: (info) =>
-          canEdit ? (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Edit ${info.row.original.componentName}`}
-              onClick={() => onEdit?.(info.row.original)}
-            >
-              <Pencil />
-            </Button>
-          ) : null,
+        cell: (info) => (
+          <span className="inline-flex items-center gap-1">
+            {canEdit ? (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`Edit ${info.row.original.componentName}`}
+                onClick={() => onEdit?.(info.row.original)}
+              >
+                <Pencil />
+              </Button>
+            ) : null}
+            {canDelete ? (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`Delete ${info.row.original.componentName}`}
+                onClick={() => onDelete?.(info.row.original)}
+                className="hover:text-danger"
+              >
+                <Trash2 />
+              </Button>
+            ) : null}
+          </span>
+        ),
       }),
     ],
-    [dense, canEdit, onEdit],
+    [dense, canEdit, onEdit, canDelete, onDelete],
   );
 
   const table = useReactTable({

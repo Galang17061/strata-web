@@ -14,6 +14,10 @@ export function updateMasterComponent(componentId: string, input: MasterComponen
   return api.put<Envelope<unknown>>(`/MasterComponent/${encodeURIComponent(componentId)}`, input);
 }
 
+export function deleteMasterComponent(componentId: string): Promise<Envelope<null>> {
+  return api.delete<Envelope<null>>(`/MasterComponent/${encodeURIComponent(componentId)}`, { silent: true });
+}
+
 export function listVendors(params: ListParams = {}): Promise<Envelope<Vendor[]>> {
   return api.get<Envelope<Vendor[]>>(`/MasterManufacturer${queryString(params)}`);
 }
