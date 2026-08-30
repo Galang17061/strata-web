@@ -6,8 +6,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { SystemTree } from "@/features/projects/types";
 import type { Level } from "@/features/workspace/model";
+import { PlotTooltip } from "@/features/workspace/plot/plot-tooltip";
 import { useLevelPlot } from "@/features/workspace/plot/use-level-plot";
-import { formatCount, formatHours, formatReliability } from "@/lib/format";
+import { formatCount } from "@/lib/format";
 import { reliabilityLabels, reliabilityThresholds } from "@/lib/reliability";
 
 type PlotDialogProps = {
@@ -83,16 +84,17 @@ export function PlotDialog({ open, onOpenChange, tree, level }: PlotDialogProps)
                   <YAxis domain={[0, 1]} ticks={[0, 0.25, 0.5, 0.75, 1]} stroke="var(--border-strong)" tick={axisTick} tickLine={false} />
                   <Tooltip
                     cursor={{ stroke: "var(--border-strong)" }}
-                    contentStyle={{
-                      background: "var(--surface-elevated)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "var(--radius-sm)",
-                      fontFamily: "var(--font-jetbrains-mono)",
-                      fontSize: 12,
-                      color: "var(--foreground)",
-                    }}
-                    labelFormatter={(label) => formatHours(label)}
-                    formatter={(item) => [formatReliability(item, 4), plot.total.name]}
+                    content={({ active, label, payload }) => (
+                      <PlotTooltip
+                        active={active}
+                        label={label}
+                        entries={(payload ?? []).map((item) => ({
+                          name: plot.total.name,
+                          value: typeof item.value === "number" ? item.value : null,
+                          color: "var(--chart-1)",
+                        }))}
+                      />
+                    )}
                   />
                   <Area type="monotone" dataKey="total" stroke="var(--chart-1)" strokeWidth={2} fill={`url(#${gradientId})`} isAnimationActive={false} />
                 </AreaChart>
