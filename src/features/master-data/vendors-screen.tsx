@@ -1,6 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
+import { useState } from "react";
 import { EmptyState } from "@/components/brand/empty-state";
 import { LayersIllustration } from "@/components/brand/illustrations";
 import { Stagger, StaggerItem } from "@/components/motion/reveal";
@@ -10,6 +12,7 @@ import { listVendors } from "@/features/master-data/api";
 import type { Vendor } from "@/features/master-data/types";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
+import { filesUrl } from "@/lib/files-url";
 import { formatCount, formatDate } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
 
@@ -38,15 +41,38 @@ export function vendorInitials(name: string): string {
     .join("");
 }
 
+function VendorLogo({ vendor }: { vendor: Vendor }) {
+  const src = filesUrl(vendor.logoImage);
+  const [broken, setBroken] = useState(false);
+  if (src && !broken) {
+    return (
+      <span className="inline-flex size-16 items-center justify-center overflow-hidden rounded-sm bg-surface-sunken p-1.5">
+        <Image
+          src={src}
+          alt={`${vendor.manufacturerName} logo`}
+          width={64}
+          height={64}
+          unoptimized
+          className="size-full object-contain"
+          onError={() => setBroken(true)}
+        />
+      </span>
+    );
+  }
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-flex size-16 items-center justify-center rounded-sm bg-surface-sunken font-mono text-h3 text-foreground-muted"
+    >
+      {vendorInitials(vendor.manufacturerName)}
+    </span>
+  );
+}
+
 function VendorCard({ vendor }: { vendor: Vendor }) {
   return (
     <Card className="h-full gap-4 transition-colors hover:border-border-strong">
-      <span
-        aria-hidden="true"
-        className="inline-flex size-16 items-center justify-center rounded-sm bg-surface-sunken font-mono text-h3 text-foreground-muted"
-      >
-        {vendorInitials(vendor.manufacturerName)}
-      </span>
+      <VendorLogo vendor={vendor} />
       <div className="min-w-0">
         <CardTitle className="truncate">{vendor.manufacturerName}</CardTitle>
         <CardDescription>Added {formatDate(vendor.createdAt)}</CardDescription>
