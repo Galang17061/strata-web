@@ -18,6 +18,10 @@ export function updateUser(userId: string, input: UserUpdateInput): Promise<Enve
   return api.put<Envelope<unknown>>(`/User/${encodeURIComponent(userId)}`, input);
 }
 
+export function deleteUser(userId: string): Promise<Envelope<null>> {
+  return api.delete<Envelope<null>>(`/User/${encodeURIComponent(userId)}`);
+}
+
 export function listRoles(): Promise<Envelope<Role[]>> {
   return api.get<Envelope<Role[]>>(`/Role${queryString({ page: 1, pageSize: 100 })}`);
 }

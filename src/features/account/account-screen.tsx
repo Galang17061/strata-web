@@ -1,18 +1,21 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { Pencil, UserPlus } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pencil, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { EmptyState } from "@/components/brand/empty-state";
 import { EmptyBlocksIllustration } from "@/components/brand/illustrations";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
-import { listUsers } from "@/features/account/api";
+import { deleteUser, listUsers } from "@/features/account/api";
 import { RoleBadge } from "@/features/account/role-badge";
 import type { User } from "@/features/account/types";
 import { UserSheet } from "@/features/account/user-sheet";
+import { useSession } from "@/features/auth/session";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
 import { countOf } from "@/lib/format";
@@ -54,6 +57,18 @@ export function AccountScreen() {
     setEditing(user);
     setSheetOpen(true);
   };
+  const session = useSession();
+  const queryClient = useQueryClient();
+  const [removing, setRemoving] = useState<User | null>(null);
+  const remove = useMutation({
+    mutationFn: (user: User) => deleteUser(user.id),
+    onSuccess: async (_, user) => {
+      setRemoving(null);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+      toast.success("Person removed", { description: `${user.fullName} can no longer sign in.` });
+    },
+    onError: (error) => toast.error("Could not remove the person", { description: error.message }),
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -95,9 +110,22 @@ export function AccountScreen() {
                   <RoleBadge roleName={user.roleName} />
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon-sm" aria-label={`Edit ${user.fullName}`} onClick={() => openEdit(user)}>
-                    <Pencil />
-                  </Button>
+                  <span className="inline-flex items-center gap-1">
+                    <Button variant="ghost" size="icon-sm" aria-label={`Edit ${user.fullName}`} onClick={() => openEdit(user)}>
+                      <Pencil />
+                    </Button>
+                    {user.id !== session.user?.id ? (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={`Delete ${user.fullName}`}
+                        onClick={() => setRemoving(user)}
+                        className="hover:text-danger"
+                      >
+                        <Trash2 />
+                      </Button>
+                    ) : null}
+                  </span>
                 </TableCell>
               </TableRow>
             ))}
@@ -119,6 +147,20 @@ export function AccountScreen() {
         />
       ) : null}
       <UserSheet open={sheetOpen} onOpenChange={setSheetOpen} user={editing} />
+      <ConfirmDialog
+        open={removing !== null}
+        onOpenChange={(open) => {
+          if (!open) setRemoving(null);
+        }}
+        title="Remove this person?"
+        description={removing ? `${removing.fullName} will lose their seat and cannot sign in again.` : ""}
+        confirmLabel="Remove person"
+        destructive
+        loading={remove.isPending}
+        onConfirm={() => {
+          if (removing) remove.mutate(removing);
+        }}
+      />
     </div>
   );
 }
