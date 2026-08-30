@@ -316,6 +316,7 @@ export function WorkspaceScreen() {
       <TreePanel
         tree={treeData}
         level={activeLevel}
+        values={systemValues.data?.data?.hierarchyLookup ?? null}
         selectedCode={selectedCode}
         canEdit={permissions.canUpdate}
         onOpenLevel={requestLevel}

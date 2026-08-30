@@ -2,6 +2,7 @@
 
 import { Boxes, ChevronRight, Layers, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { ReliabilityBadge } from "@/components/reliability/reliability-badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -24,6 +25,7 @@ export type TreeAction =
 type TreePanelProps = {
   tree: SystemTree;
   level: Level;
+  values: Record<string, number> | null;
   selectedCode: string | null;
   canEdit: boolean;
   onOpenLevel: (level: Level) => void;
@@ -120,6 +122,7 @@ function HierarchyRow({
   node,
   depth,
   level,
+  values,
   selectedCode,
   canEdit,
   onOpenLevel,
@@ -129,6 +132,7 @@ function HierarchyRow({
   node: TreeNode;
   depth: number;
   level: Level;
+  values: Record<string, number> | null;
   selectedCode: string | null;
   canEdit: boolean;
   onOpenLevel: (level: Level) => void;
@@ -136,6 +140,7 @@ function HierarchyRow({
   onAction: (action: TreeAction) => void;
 }) {
   const [open, setOpen] = useState(true);
+  const value = node.formulaCode ? (values?.[node.formulaCode] ?? null) : null;
   const children = node.hierarchy ?? [];
   const components = node.components ?? [];
   const hasChildren = children.length > 0 || components.length > 0;
@@ -166,8 +171,14 @@ function HierarchyRow({
           className="flex min-w-0 flex-1 items-center gap-2 rounded-sm py-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Layers className="size-3.5 shrink-0 text-foreground-subtle" aria-hidden="true" />
-          <span className="truncate">{node.name}</span>
-          <span className="ml-auto font-mono text-caption tracking-normal text-foreground-subtle">{node.formulaCode}</span>
+          <span className="truncate" title={node.formulaCode ?? undefined}>
+            {node.name}
+          </span>
+          {value === null ? (
+            <span className="ml-auto font-mono text-caption tracking-normal text-foreground-subtle">{node.formulaCode}</span>
+          ) : (
+            <ReliabilityBadge value={value} size="sm" showLabel={false} className="ml-auto" />
+          )}
         </button>
         <RowActions node={node} canEdit={canEdit} onAction={onAction} />
       </div>
@@ -179,6 +190,7 @@ function HierarchyRow({
               node={child}
               depth={depth + 1}
               level={level}
+              values={values}
               selectedCode={selectedCode}
               canEdit={canEdit}
               onOpenLevel={onOpenLevel}
@@ -204,7 +216,7 @@ function HierarchyRow({
   );
 }
 
-export function TreePanel({ tree, level, selectedCode, canEdit, onOpenLevel, onSelectComponent, onAction }: TreePanelProps) {
+export function TreePanel({ tree, level, values, selectedCode, canEdit, onOpenLevel, onSelectComponent, onAction }: TreePanelProps) {
   const systemActive = level.scope === "system";
   return (
     <div className="flex h-full flex-col">
@@ -236,6 +248,7 @@ export function TreePanel({ tree, level, selectedCode, canEdit, onOpenLevel, onS
             node={node}
             depth={1}
             level={level}
+            values={values}
             selectedCode={selectedCode}
             canEdit={canEdit}
             onOpenLevel={onOpenLevel}
