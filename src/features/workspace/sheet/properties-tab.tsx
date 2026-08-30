@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getComponent, updateComponent } from "@/features/workspace/api";
+import { fitDistribution, getComponent, updateComponent } from "@/features/workspace/api";
 import type { ComponentDetail, ComponentUpdateInput } from "@/features/workspace/types";
 import { formatFailureRate, formatHours, formatReliability } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
@@ -205,14 +205,24 @@ export function PropertiesTab({ systemComponentId, canEdit }: PropertiesTabProps
 
   const save = useMutation({
     mutationFn: async () => {
-      if (!data || !form) return;
+      if (!data || !form) return null;
       await updateComponent(systemComponentId, toUpdateInput(data, form));
+      try {
+        await fitDistribution(systemComponentId, form.distribution);
+        return null;
+      } catch (error) {
+        return error instanceof Error ? error.message : "The distribution could not be fitted.";
+      }
     },
-    onSuccess: async () => {
+    onSuccess: async (fitProblem) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.components.all });
       await queryClient.invalidateQueries({ queryKey: queryKeys.systems.all });
       await queryClient.invalidateQueries({ queryKey: ["drawing"] });
       await queryClient.invalidateQueries({ queryKey: ["hierarchy"] });
+      if (fitProblem) {
+        toast.warning("Saved, but the fit did not go through", { description: fitProblem });
+        return;
+      }
       toast.success("Properties saved", { description: data?.componentName });
     },
     onError: (error) => setProblem(error.message),
