@@ -77,6 +77,7 @@
   --dur-loader: 1200ms;
   --dur-shimmer: 1400ms;
   --stagger: 40ms;
+  --stagger-layer: 60ms;
 
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);

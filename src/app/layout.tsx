@@ -23,6 +23,19 @@ export const metadata: Metadata = {
   },
   description: "Know how likely your system still works, layer by layer.",
   applicationName: "Strata Web",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "32x32" },
+    ],
+    apple: "/brand/apple-touch-icon.png",
+  },
+  openGraph: {
+    title: "Strata",
+    description: "Know how likely your system still works, layer by layer.",
+    siteName: "Strata Web",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -32,6 +45,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta property="og:image" content="/brand/og-image.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+      </head>
       <body className={`${manrope.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>
       </body>
