@@ -12,6 +12,7 @@ export type Vendor = {
 export type VendorInput = {
   manufacturerName: string;
   validUntil?: string | null;
+  logo?: File | null;
 };
 
 export type MasterComponent = {

@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createVendor } from "@/features/master-data/api";
+import { LogoDropZone } from "@/features/master-data/logo-drop-zone";
 import { ApiError } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query-keys";
 
@@ -44,12 +45,17 @@ export function VendorDialog({ open, onOpenChange }: VendorDialogProps) {
     mode: "onBlur",
   });
 
+  const [logo, setLogo] = useState<File | null>(null);
+
   useEffect(() => {
-    if (open) form.reset(emptyValues);
+    if (open) {
+      form.reset(emptyValues);
+      setLogo(null);
+    }
   }, [open, form]);
 
   const mutation = useMutation({
-    mutationFn: (values: FormValues) => createVendor(values),
+    mutationFn: (values: FormValues) => createVendor({ ...values, logo }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all });
       toast.success("Vendor added", { description: form.getValues("manufacturerName") });
@@ -95,6 +101,7 @@ export function VendorDialog({ open, onOpenChange }: VendorDialogProps) {
             <Input id="vendor-valid-until" type="date" className="font-mono tabular-nums sm:max-w-48" {...form.register("validUntil")} />
             <p className="text-caption text-foreground-muted normal-case">Leave it empty if the agreement has no end date.</p>
           </div>
+          <LogoDropZone file={logo} onFileChange={setLogo} />
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="secondary">
