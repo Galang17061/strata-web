@@ -43,6 +43,13 @@ export function formatHours(value: unknown): string {
   return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(parsed)} h`;
 }
 
+export function formatMoney(value: unknown): string {
+  const digits = typeof value === "string" ? value.replace(/[^\d.-]/g, "") : value;
+  const parsed = toNumber(digits);
+  if (parsed === null) return EMPTY;
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(parsed);
+}
+
 export function formatCount(value: unknown): string {
   const parsed = toNumber(value);
   if (parsed === null) return EMPTY;
