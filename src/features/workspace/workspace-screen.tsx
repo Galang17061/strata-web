@@ -339,6 +339,7 @@ export function WorkspaceScreen() {
       onOpenComponent={openComponent}
       onPickCode={setSelectedCode}
       onPlot={() => setPlotOpen(true)}
+      onBack={() => setSelectedCode(null)}
     />
   );
 

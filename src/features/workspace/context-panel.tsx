@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Boxes, ChartArea, FunctionSquare, Layers, Pencil } from "lucide-react";
+import { ArrowLeft, ArrowRight, Boxes, ChartArea, FunctionSquare, Layers, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Formula, plainFormulaToTex } from "@/components/formula/formula";
@@ -48,6 +48,7 @@ type ContextPanelProps = {
   onOpenComponent: (node: CanvasNode) => void;
   onPickCode?: (code: string) => void;
   onPlot?: () => void;
+  onBack?: () => void;
 };
 
 function InputParameters({ parameters, onPickCode }: { parameters: ComponentInputParameters[]; onPickCode?: (code: string) => void }) {
@@ -156,7 +157,7 @@ function FormulaDialog({ level, formula, open, onOpenChange }: { level: Level; f
   );
 }
 
-export function ContextPanel({ level, summary, selected, parameters, canEdit, onOpenLayer, onOpenComponent, onPickCode, onPlot }: ContextPanelProps) {
+export function ContextPanel({ level, summary, selected, parameters, canEdit, onOpenLayer, onOpenComponent, onPickCode, onPlot, onBack }: ContextPanelProps) {
   const [formulaOpen, setFormulaOpen] = useState(false);
 
   if (selected) {
@@ -164,6 +165,13 @@ export function ContextPanel({ level, summary, selected, parameters, canEdit, on
     const parameter = parameters.find((item) => item.formulaCode === data.code);
     return (
       <div className="flex h-full flex-col">
+        {onBack ? (
+          <div className="border-b border-border px-2 py-1.5">
+            <Button variant="ghost" size="sm" className="h-7 text-foreground-muted" onClick={onBack}>
+              <ArrowLeft /> {summary.name}
+            </Button>
+          </div>
+        ) : null}
         <div className="flex items-start gap-3 border-b border-border px-4 py-4">
           <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm bg-accent text-accent-foreground">
             {data.kind === "subsystem" ? <Layers className="size-4" /> : <Boxes className="size-4" />}
