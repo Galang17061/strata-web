@@ -147,7 +147,48 @@ async function request<T>(
   return (await readJson(response)) as T;
 }
 
+export type DownloadedFile = {
+  blob: Blob;
+  fileName: string;
+};
+
+export function fileNameFromDisposition(header: string | null, fallback: string): string {
+  if (!header) return fallback;
+  const encoded = header.match(/filename\*=UTF-8''([^;]+)/i);
+  if (encoded) return decodeURIComponent(encoded[1].trim());
+  const plain = header.match(/filename="?([^";]+)"?/i);
+  return plain ? plain[1].trim() : fallback;
+}
+
+async function download(endpoint: string, fallbackName: string): Promise<DownloadedFile> {
+  const token = readCookie(tokenCookieName());
+  const headers: Record<string, string> = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const response = await fetch(`${apiBaseUrl()}${endpoint}`, { headers });
+  if (response.status === 401 || response.status === 403) {
+    if (unauthorizedHandler && !handlingUnauthorized) {
+      handlingUnauthorized = true;
+      try {
+        unauthorizedHandler(response.status);
+      } finally {
+        handlingUnauthorized = false;
+      }
+    }
+    throw new ApiError("You are not allowed to fetch this file.", response.status);
+  }
+  if (!response.ok) {
+    const payload = await readJson(response);
+    const { message } = messageFromErrorBody(payload, response.status);
+    throw new ApiError(message, response.status, payload);
+  }
+  return {
+    blob: await response.blob(),
+    fileName: fileNameFromDisposition(response.headers.get("Content-Disposition"), fallbackName),
+  };
+}
+
 export const api = {
+  download,
   get: <T>(endpoint: string, options?: RequestOptions) => request<T>("GET", endpoint, undefined, options),
   post: <T>(endpoint: string, body?: unknown, options?: RequestOptions) =>
     request<T>("POST", endpoint, body, options),

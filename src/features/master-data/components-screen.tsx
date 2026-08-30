@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
-import { Columns3, Plus, Rows2, Rows3, Search } from "lucide-react";
+import { Columns3, FileDown, Plus, Rows2, Rows3, Search } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import { TablePagination } from "@/components/ui/table-pagination";
 import { PermissionGate } from "@/features/auth/permission-gate";
 import { MODULES } from "@/features/auth/roles";
 import { usePermissions } from "@/features/auth/session";
-import { deleteMasterComponent, listMasterComponents } from "@/features/master-data/api";
+import { deleteMasterComponent, downloadComponentTemplate, listMasterComponents } from "@/features/master-data/api";
 import { ComponentDialog } from "@/features/master-data/component-dialog";
 import { ComponentsTable, hideableColumns } from "@/features/master-data/components-table";
 import type { MasterComponent } from "@/features/master-data/types";
@@ -27,6 +27,7 @@ import { MasterDataTabs } from "@/features/master-data/master-data-tabs";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
 import { ApiError } from "@/lib/api/client";
+import { downloadBlob } from "@/lib/export-svg";
 import { countOf } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
 import { useDebounce } from "@/lib/use-debounce";
@@ -53,6 +54,14 @@ export function ComponentsScreen() {
   };
   const [removing, setRemoving] = useState<MasterComponent | null>(null);
   const queryClient = useQueryClient();
+  const template = useMutation({
+    mutationFn: downloadComponentTemplate,
+    onSuccess: (file) => {
+      downloadBlob(file.fileName, file.blob);
+      toast.success("Template on its way", { description: "Fill a row per part, then import the sheet." });
+    },
+    onError: (error) => toast.error("Could not fetch the template", { description: error.message }),
+  });
   const remove = useMutation({
     mutationFn: (component: MasterComponent) => deleteMasterComponent(component.componentId),
     onSuccess: async (_, component) => {
@@ -98,11 +107,18 @@ export function ComponentsScreen() {
         title="Components"
         description={components.data ? `${countOf(total, "part")} a system can be built from.` : "The catalogue of parts a system can be built from."}
         actions={
-          <PermissionGate moduleName={MODULES.MASTER_DATA} permission="create">
-            <Button onClick={openCreate}>
-              <Plus /> New component
-            </Button>
-          </PermissionGate>
+          <>
+            <PermissionGate moduleName={MODULES.MASTER_DATA} permission="download">
+              <Button variant="secondary" loading={template.isPending} onClick={() => template.mutate()}>
+                <FileDown /> Template
+              </Button>
+            </PermissionGate>
+            <PermissionGate moduleName={MODULES.MASTER_DATA} permission="create">
+              <Button onClick={openCreate}>
+                <Plus /> New component
+              </Button>
+            </PermissionGate>
+          </>
         }
       />
       <MasterDataTabs />
