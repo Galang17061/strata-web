@@ -24,11 +24,12 @@ import { queryKeys } from "@/lib/query-keys";
 
 const schema = z.object({
   manufacturerName: z.string().trim().min(1, "Give the vendor a name.").max(255, "Keep the name under 255 characters."),
+  validUntil: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-const emptyValues: FormValues = { manufacturerName: "" };
+const emptyValues: FormValues = { manufacturerName: "", validUntil: "" };
 
 type VendorDialogProps = {
   open: boolean;
@@ -88,6 +89,11 @@ export function VendorDialog({ open, onOpenChange }: VendorDialogProps) {
                 {error}
               </p>
             ) : null}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="vendor-valid-until">Valid until</Label>
+            <Input id="vendor-valid-until" type="date" className="font-mono tabular-nums sm:max-w-48" {...form.register("validUntil")} />
+            <p className="text-caption text-foreground-muted normal-case">Leave it empty if the agreement has no end date.</p>
           </div>
           <DialogFooter>
             <DialogClose asChild>

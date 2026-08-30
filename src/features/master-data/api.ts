@@ -13,6 +13,7 @@ export function listVendors(params: ListParams = {}): Promise<Envelope<Vendor[]>
 function vendorForm(input: VendorInput): FormData {
   const form = new FormData();
   form.append("ManufacturerName", input.manufacturerName);
+  if (input.validUntil) form.append("ValidUntil", input.validUntil);
   return form;
 }
 

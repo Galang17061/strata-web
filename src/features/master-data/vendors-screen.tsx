@@ -80,7 +80,9 @@ function VendorCard({ vendor }: { vendor: Vendor }) {
       <VendorLogo vendor={vendor} />
       <div className="min-w-0">
         <CardTitle className="truncate">{vendor.manufacturerName}</CardTitle>
-        <CardDescription>Added {formatDate(vendor.createdAt)}</CardDescription>
+        <CardDescription>
+          {vendor.validUntil ? `Valid until ${formatDate(vendor.validUntil)}` : `Added ${formatDate(vendor.createdAt)}`}
+        </CardDescription>
       </div>
     </Card>
   );
