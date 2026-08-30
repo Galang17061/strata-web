@@ -15,6 +15,7 @@ import type {
   HierarchyCreateInput,
   HierarchyUpdateInput,
   HierarchyView,
+  HistoryEntry,
   SystemTotal,
   WeibullParameter,
 } from "@/features/workspace/types";
@@ -127,6 +128,12 @@ export function systemTotal(rbdSystemId: string): Promise<Envelope<SystemTotal>>
 
 export function hierarchyReliability(hierarchyId: string): Promise<Envelope<HierarchyCalculation>> {
   return api.get<Envelope<HierarchyCalculation>>(`/ReliabilityTotal/hierarchy/${encodeURIComponent(hierarchyId)}/reliability`);
+}
+
+export function listHistory(hierarchyId: string, params: { page: number; pageSize: number }): Promise<Envelope<HistoryEntry[]>> {
+  return api.get<Envelope<HistoryEntry[]>>(
+    `/ReliabilityTotal/hierarchy/${encodeURIComponent(hierarchyId)}/history${queryString({ ...params, sortOrder: "desc" })}`,
+  );
 }
 
 export function updateRunningHours(rbdSystemId: string, runningHours: number): Promise<Envelope<null>> {

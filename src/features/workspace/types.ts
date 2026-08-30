@@ -157,6 +157,35 @@ export type WeibullParameter = {
   totalReliability: number | null;
 };
 
+export type HistoryComponentDetail = {
+  formulaCode: string | null;
+  componentName: string | null;
+  vendor: string | null;
+  type: string;
+  connectionType: string | null;
+  activeComponent: number | null;
+  totalComponent: number | null;
+  baseReliability: number | null;
+  adjustedReliability: number | null;
+  failureRate: number | null;
+};
+
+export type HistoryEntry = {
+  historyId: string;
+  rbdSystemId: string;
+  hierarchyId: string;
+  hierarchyName: string | null;
+  hierarchyLevel: number | null;
+  formulaCode: string | null;
+  formula: string | null;
+  calculatedReliability: number | null;
+  reliabilityLookup: Record<string, number> | null;
+  componentDetails: HistoryComponentDetail[] | null;
+  runningHours: number | null;
+  calculationTimestamp: string;
+  calculatedBy: string | null;
+};
+
 export type SystemTotal = {
   rbdSystemId: string;
   systemName: string | null;

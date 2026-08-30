@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { updateHierarchy, updateSystemFormula } from "@/features/workspace/api";
+import { HistoryTimeline } from "@/features/workspace/history-timeline";
 import { connectionLabel } from "@/features/workspace/canvas/block-node";
 import type { CanvasNode, Level } from "@/features/workspace/model";
 import type { ComponentInputParameters } from "@/features/workspace/types";
@@ -261,6 +262,7 @@ export function ContextPanel({ level, summary, selected, parameters, canEdit, on
           Full value: {formatReliability(summary.value, 8)}
         </p>
         {level.scope === "hierarchy" && parameters.length > 0 ? <InputParameters parameters={parameters} onPickCode={onPickCode} /> : null}
+        {level.scope === "hierarchy" ? <HistoryTimeline hierarchyId={level.id} /> : null}
       </div>
       <FormulaDialog level={level} formula={summary.formula ?? ""} open={formulaOpen} onOpenChange={setFormulaOpen} />
     </div>
