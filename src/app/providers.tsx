@@ -5,6 +5,7 @@ import { MotionConfig } from "motion/react";
 import { ThemeProvider, useTheme } from "next-themes";
 import { useState, type ReactNode } from "react";
 import { Toaster } from "sonner";
+import { AuthBridge } from "@/features/auth/auth-bridge";
 
 function ThemedToaster() {
   const { resolvedTheme } = useTheme();
@@ -45,6 +46,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <QueryClientProvider client={queryClient}>
         <MotionConfig reducedMotion="user">{children}</MotionConfig>
+        <AuthBridge />
         <ThemedToaster />
       </QueryClientProvider>
     </ThemeProvider>

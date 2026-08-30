@@ -1,0 +1,15 @@
+import { api, type Envelope } from "@/lib/api/client";
+import type { AuthUser, Credentials, CurrentUser } from "@/features/auth/types";
+
+export async function login(credentials: Credentials): Promise<AuthUser> {
+  const response = await api.post<Envelope<AuthUser>>("/Auth/Login", credentials);
+  return response.data;
+}
+
+export async function logout(): Promise<void> {
+  await api.post("/Auth/logout", {}, { silent: true });
+}
+
+export async function currentUser(): Promise<CurrentUser> {
+  return api.get<CurrentUser>("/User/me", { silent: true });
+}
