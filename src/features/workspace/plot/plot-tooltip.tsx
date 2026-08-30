@@ -24,7 +24,7 @@ export function PlotTooltip({ active, label, entries }: PlotTooltipProps) {
   if (!active || entries.length === 0) return null;
   return (
     <div className="min-w-48 rounded-sm border border-border bg-surface-elevated px-3 py-2 shadow-md">
-      <p className="text-caption uppercase text-foreground-muted">{formatHours(label)}</p>
+      <p className="text-caption text-foreground-muted normal-case tracking-normal">{formatHours(label)}</p>
       <ul className="mt-1 flex flex-col gap-1">
         {entries.map((entry) => {
           const described = describePlotValue(entry.value);
