@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { PermissionGate } from "@/features/auth/permission-gate";
 import { MODULES } from "@/features/auth/roles";
 import { usePermissions } from "@/features/auth/session";
@@ -118,6 +119,17 @@ export function ProjectsScreen() {
   const list = useMemo(() => projects.data?.data ?? [], [projects.data]);
   const stats = useMemo(() => statsFor(systems.data?.data ?? []), [systems.data]);
   const paged = useMemo(() => list.slice((page - 1) * pageSize, page * pageSize), [list, page, pageSize]);
+  const pageMeta = useMemo(
+    () => ({
+      totalData: list.length,
+      totalPage: Math.max(1, Math.ceil(list.length / pageSize)),
+      currentPage: page,
+      pageSize,
+      hasNextPage: page * pageSize < list.length,
+      hasPreviousPage: page > 1,
+    }),
+    [list.length, page, pageSize],
+  );
 
   useEffect(() => {
     setPage(1);
@@ -174,18 +186,6 @@ export function ProjectsScreen() {
           <SelectContent>
             <SelectItem value="name">Name A to Z</SelectItem>
             <SelectItem value="newest">Newest first</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
-          <SelectTrigger aria-label="Projects per page" className="w-24 font-mono tabular-nums">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {[10, 20, 50, 100].map((size) => (
-              <SelectItem key={size} value={String(size)} className="font-mono tabular-nums">
-                {size}
-              </SelectItem>
-            ))}
           </SelectContent>
         </Select>
         <div role="radiogroup" aria-label="View" className="ml-auto inline-flex rounded-sm border border-border bg-surface-sunken p-0.5">
@@ -295,6 +295,18 @@ export function ProjectsScreen() {
           </TableBody>
         </Table>
       )}
+
+      {!projects.isPending && !isEmpty ? (
+        <TablePagination
+          meta={pageMeta}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          singular="project"
+          sizes={[10, 20, 50, 100]}
+        />
+      ) : null}
 
       <ProjectDialog
         open={dialogOpen}

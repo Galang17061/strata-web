@@ -16,9 +16,10 @@ type TablePaginationProps = {
   onPageSizeChange: (pageSize: number) => void;
   singular?: string;
   plural?: string;
+  sizes?: number[];
 };
 
-export function TablePagination({ meta, page, pageSize, onPageChange, onPageSizeChange, singular = "row", plural }: TablePaginationProps) {
+export function TablePagination({ meta, page, pageSize, onPageChange, onPageSizeChange, singular = "row", plural, sizes = pageSizes }: TablePaginationProps) {
   const total = meta?.totalData ?? 0;
   const first = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const last = Math.min(page * pageSize, total);
@@ -39,7 +40,7 @@ export function TablePagination({ meta, page, pageSize, onPageChange, onPageSize
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {pageSizes.map((size) => (
+              {sizes.map((size) => (
                 <SelectItem key={size} value={String(size)} className="font-mono tabular-nums">
                   {size}
                 </SelectItem>
