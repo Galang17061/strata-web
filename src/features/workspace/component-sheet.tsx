@@ -2,6 +2,7 @@
 
 import { Boxes } from "lucide-react";
 import { Sheet, SheetBody, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CanvasNode } from "@/features/workspace/model";
 
 type ComponentSheetProps = {
@@ -9,6 +10,13 @@ type ComponentSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
+
+const tabs = [
+  { value: "properties", label: "Properties", hint: "How this part is wired and scored." },
+  { value: "failures", label: "Failures", hint: "Every time this part stopped working." },
+  { value: "parameters", label: "Parameters", hint: "The distribution figures behind its score." },
+  { value: "curve", label: "Curve", hint: "How its chance of working falls over time." },
+] as const;
 
 export function ComponentSheet({ node, open, onOpenChange }: ComponentSheetProps) {
   return (
@@ -28,9 +36,22 @@ export function ComponentSheet({ node, open, onOpenChange }: ComponentSheetProps
             </div>
           </div>
         </SheetHeader>
-        <SheetBody>
-          <p className="text-body-sm text-foreground-muted">Everything about this part will live here.</p>
-        </SheetBody>
+        <Tabs defaultValue="properties" className="min-h-0 flex-1 gap-0">
+          <TabsList className="px-6">
+            {tabs.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {tabs.map((tab) => (
+            <TabsContent key={tab.value} value={tab.value} className="min-h-0">
+              <SheetBody>
+                <p className="text-body-sm text-foreground-muted">{tab.hint}</p>
+              </SheetBody>
+            </TabsContent>
+          ))}
+        </Tabs>
       </SheetContent>
     </Sheet>
   );
