@@ -3,11 +3,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { EmptyState } from "@/components/brand/empty-state";
 import { LayersIllustration } from "@/components/brand/illustrations";
+import { Stagger, StaggerItem } from "@/components/motion/reveal";
+import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { listVendors } from "@/features/master-data/api";
+import type { Vendor } from "@/features/master-data/types";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
-import { formatCount } from "@/lib/format";
+import { formatCount, formatDate } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
 
 const listParams = { page: 1, pageSize: 100 };
@@ -23,6 +26,32 @@ function VendorSkeleton() {
         </div>
       ))}
     </div>
+  );
+}
+
+export function vendorInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function VendorCard({ vendor }: { vendor: Vendor }) {
+  return (
+    <Card className="h-full gap-4 transition-colors hover:border-border-strong">
+      <span
+        aria-hidden="true"
+        className="inline-flex size-16 items-center justify-center rounded-sm bg-surface-sunken font-mono text-h3 text-foreground-muted"
+      >
+        {vendorInitials(vendor.manufacturerName)}
+      </span>
+      <div className="min-w-0">
+        <CardTitle className="truncate">{vendor.manufacturerName}</CardTitle>
+        <CardDescription>Added {formatDate(vendor.createdAt)}</CardDescription>
+      </div>
+    </Card>
   );
 }
 
@@ -50,7 +79,13 @@ export function VendorsScreen() {
           className="rounded-md border border-dashed border-border"
         />
       ) : (
-        <p className="text-body-sm text-foreground-muted">{formatCount(rows.length)} vendors loaded. Their cards are on the way.</p>
+        <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {rows.map((vendor) => (
+            <StaggerItem key={vendor.vendorId}>
+              <VendorCard vendor={vendor} />
+            </StaggerItem>
+          ))}
+        </Stagger>
       )}
     </div>
   );
