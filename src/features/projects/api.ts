@@ -17,7 +17,7 @@ export function getProject(projectId: string): Promise<Envelope<Project>> {
   return api.get<Envelope<Project>>(`/MasterProject/${encodeURIComponent(projectId)}`);
 }
 
-export function createProject(input: { projectName: string }): Promise<Envelope<Project>> {
+export function createProject(input: { projectName: string; hierarchyDepth: number }): Promise<Envelope<Project>> {
   return api.post<Envelope<Project>>("/MasterProject", input);
 }
 

@@ -1,6 +1,7 @@
 export type Project = {
   projectId: string;
   projectName: string;
+  hierarchyDepth: number;
   createdAt: string;
   updatedAt: string;
   createdBy: string | null;
