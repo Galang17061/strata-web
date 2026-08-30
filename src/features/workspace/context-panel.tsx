@@ -19,12 +19,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { updateHierarchy, updateSystemFormula } from "@/features/workspace/api";
 import { connectionLabel } from "@/features/workspace/canvas/block-node";
 import type { CanvasNode, Level } from "@/features/workspace/model";
 import type { ComponentInputParameters } from "@/features/workspace/types";
-import { formatFailureRate, formatHours, formatReliability } from "@/lib/format";
+import { formatCount, formatFailureRate, formatHours, formatReliability } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
+import { cn } from "@/lib/utils";
 
 type LevelSummary = {
   name: string;
@@ -43,7 +45,49 @@ type ContextPanelProps = {
   canEdit: boolean;
   onOpenLayer: (node: CanvasNode) => void;
   onOpenComponent: (node: CanvasNode) => void;
+  onPickCode?: (code: string) => void;
 };
+
+function InputParameters({ parameters, onPickCode }: { parameters: ComponentInputParameters[]; onPickCode?: (code: string) => void }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-caption uppercase text-foreground-muted">Input parameters</span>
+      <Table dense containerClassName="rounded-sm">
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead>Part</TableHead>
+            <TableHead numeric className="normal-case">
+              λ
+            </TableHead>
+            <TableHead numeric className="normal-case">
+              t
+            </TableHead>
+            <TableHead numeric className="normal-case">
+              R
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {parameters.map((parameter) => (
+            <TableRow
+              key={parameter.formulaCode ?? parameter.componentName}
+              className={cn(onPickCode && "cursor-pointer")}
+              onClick={() => parameter.formulaCode && onPickCode?.(parameter.formulaCode)}
+            >
+              <TableCell className="max-w-32">
+                <span className="block truncate">{parameter.componentName}</span>
+                <span className="block font-mono text-caption tracking-normal text-foreground-subtle">{parameter.formulaCode}</span>
+              </TableCell>
+              <TableCell numeric>{formatFailureRate(parameter.failureRate)}</TableCell>
+              <TableCell numeric>{formatCount(parameter.runningHours)}</TableCell>
+              <TableCell numeric>{formatReliability(parameter.componentReliability)}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -111,7 +155,7 @@ function FormulaDialog({ level, formula, open, onOpenChange }: { level: Level; f
   );
 }
 
-export function ContextPanel({ level, summary, selected, parameters, canEdit, onOpenLayer, onOpenComponent }: ContextPanelProps) {
+export function ContextPanel({ level, summary, selected, parameters, canEdit, onOpenLayer, onOpenComponent, onPickCode }: ContextPanelProps) {
   const [formulaOpen, setFormulaOpen] = useState(false);
 
   if (selected) {
@@ -218,6 +262,7 @@ export function ContextPanel({ level, summary, selected, parameters, canEdit, on
         <p className="text-caption text-foreground-subtle normal-case tracking-normal">
           Full value: {formatReliability(summary.value, 8)}
         </p>
+        {level.scope === "hierarchy" && parameters.length > 0 ? <InputParameters parameters={parameters} onPickCode={onPickCode} /> : null}
       </div>
       <FormulaDialog level={level} formula={summary.formula ?? ""} open={formulaOpen} onOpenChange={setFormulaOpen} />
     </div>

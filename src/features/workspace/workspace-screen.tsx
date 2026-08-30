@@ -308,6 +308,7 @@ export function WorkspaceScreen() {
       canEdit={permissions.canUpdate}
       onOpenLayer={openLayer}
       onOpenComponent={openComponent}
+      onPickCode={setSelectedCode}
     />
   );
 
