@@ -1,15 +1,17 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eraser, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { createFailureEvents, listFailureEvents } from "@/features/workspace/api";
+import { createFailureEvents, deleteFailureEvent, deleteFailureEventsOfComponent, listFailureEvents } from "@/features/workspace/api";
+import type { FailureEvent } from "@/features/workspace/types";
 import { formatCount, formatDate } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
 
@@ -31,6 +33,7 @@ export function FailuresTab({ systemComponentId, canEdit }: FailuresTabProps) {
   const [date, setDate] = useState(todayIso);
   const [hours, setHours] = useState("");
   const [problem, setProblem] = useState<string | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const events = useQuery({
     queryKey: queryKeys.components.failures(systemComponentId, { page, pageSize }),
@@ -57,6 +60,42 @@ export function FailuresTab({ systemComponentId, canEdit }: FailuresTabProps) {
       toast.success("Failure recorded", { description: `At ${formatCount(Number(hours))} hours on ${formatDate(date)}` });
     },
     onError: (error) => setProblem(error.message),
+  });
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: queryKeys.components.all });
+
+  const removeOne = useMutation({
+    mutationFn: (event: FailureEvent) => deleteFailureEvent(event.failureEventId),
+    onSuccess: async (_, event) => {
+      await refresh();
+      toast.success("Failure removed", {
+        description: `The one at ${formatCount(event.runningHours)} hours`,
+        action: {
+          label: "Undo",
+          onClick: () =>
+            createFailureEvents([
+              {
+                systemComponentId,
+                failureDate: event.failureDate,
+                failureNumber: event.failureNumber ?? 1,
+                runningHours: event.runningHours,
+              },
+            ]).then(refresh),
+        },
+      });
+    },
+    onError: (error) => toast.error("Could not remove the failure", { description: error.message }),
+  });
+
+  const removeAll = useMutation({
+    mutationFn: () => deleteFailureEventsOfComponent(systemComponentId),
+    onSuccess: async () => {
+      setConfirmClear(false);
+      setPage(1);
+      await refresh();
+      toast.success("Failure log cleared");
+    },
+    onError: (error) => toast.error("Could not clear the log", { description: error.message }),
   });
 
   const submit = () => {
@@ -90,9 +129,19 @@ export function FailuresTab({ systemComponentId, canEdit }: FailuresTabProps) {
           {meta ? `${formatCount(meta.totalData)} recorded failure${meta.totalData === 1 ? "" : "s"}` : "Failure log"}
         </p>
         {canEdit && !adding ? (
-          <Button variant="secondary" size="sm" onClick={() => setAdding(true)}>
-            <Plus /> Add failure
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={!meta || meta.totalData === 0}
+              onClick={() => setConfirmClear(true)}
+            >
+              <Eraser /> Clear
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => setAdding(true)}>
+              <Plus /> Add failure
+            </Button>
+          </div>
         ) : null}
       </div>
       {adding ? (
@@ -151,12 +200,13 @@ export function FailuresTab({ systemComponentId, canEdit }: FailuresTabProps) {
             <TableHead numeric>#</TableHead>
             <TableHead>Date</TableHead>
             <TableHead numeric>At hours</TableHead>
+            {canEdit ? <TableHead className="w-10" /> : null}
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.length === 0 ? (
             <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={3} className="py-6 text-center whitespace-normal text-foreground-muted">
+              <TableCell colSpan={canEdit ? 4 : 3} className="py-6 text-center whitespace-normal text-foreground-muted">
                 No failures recorded yet. The distribution stays at its master figures until some are.
               </TableCell>
             </TableRow>
@@ -166,6 +216,20 @@ export function FailuresTab({ systemComponentId, canEdit }: FailuresTabProps) {
                 <TableCell numeric>{event.failureNumber ?? (page - 1) * pageSize + index + 1}</TableCell>
                 <TableCell>{formatDate(event.failureDate)}</TableCell>
                 <TableCell numeric>{formatCount(event.runningHours)}</TableCell>
+                {canEdit ? (
+                  <TableCell className="py-0 pr-2">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="size-7"
+                      aria-label={`Remove failure ${event.failureNumber ?? ""} at ${formatCount(event.runningHours)} hours`}
+                      disabled={removeOne.isPending}
+                      onClick={() => removeOne.mutate(event)}
+                    >
+                      <Trash2 />
+                    </Button>
+                  </TableCell>
+                ) : null}
               </TableRow>
             ))
           )}
@@ -186,6 +250,16 @@ export function FailuresTab({ systemComponentId, canEdit }: FailuresTabProps) {
           </div>
         </div>
       ) : null}
+      <ConfirmDialog
+        open={confirmClear}
+        onOpenChange={setConfirmClear}
+        title="Clear the whole failure log?"
+        description="Every recorded failure of this part will be removed and its fitted figures will fall back to the master data."
+        confirmLabel="Clear log"
+        destructive
+        loading={removeAll.isPending}
+        onConfirm={() => removeAll.mutate()}
+      />
     </div>
   );
 }

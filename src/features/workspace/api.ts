@@ -97,6 +97,14 @@ export function createFailureEvents(inputs: FailureEventInput[]): Promise<Envelo
   return api.post<Envelope<FailureEventInput[]>>("/ReliabilityEditor/failureEvent", inputs);
 }
 
+export function deleteFailureEvent(failureEventId: string): Promise<Envelope<null>> {
+  return api.delete<Envelope<null>>(`/ReliabilityEditor/failureEvent/${encodeURIComponent(failureEventId)}`);
+}
+
+export function deleteFailureEventsOfComponent(systemComponentId: string): Promise<Envelope<null>> {
+  return api.delete<Envelope<null>>(`/ReliabilityEditor/failureEvent/bySystemComponent/${encodeURIComponent(systemComponentId)}`);
+}
+
 export function systemTotal(rbdSystemId: string): Promise<Envelope<SystemTotal>> {
   return api.get<Envelope<SystemTotal>>(`/ReliabilityTotal/rbdSystem/${encodeURIComponent(rbdSystemId)}/reliability-total`);
 }
