@@ -17,6 +17,7 @@ import { MODULES } from "@/features/auth/roles";
 import { usePermissions } from "@/features/auth/session";
 import { deleteVendor, listVendors } from "@/features/master-data/api";
 import type { Vendor } from "@/features/master-data/types";
+import { MasterDataTabs } from "@/features/master-data/master-data-tabs";
 import { VendorDialog } from "@/features/master-data/vendor-dialog";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
@@ -172,6 +173,7 @@ export function VendorsScreen() {
         description={vendors.data ? `${formatCount(vendors.data.meta?.totalData ?? rows.length)} manufacturers your parts come from.` : "The manufacturers your parts come from."}
         actions={newVendorButton}
       />
+      <MasterDataTabs />
       {vendors.isPending ? (
         <VendorSkeleton />
       ) : rows.length === 0 ? (
