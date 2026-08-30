@@ -1,5 +1,5 @@
 import { api, queryString, type Envelope } from "@/lib/api/client";
-import type { Role, User, UserInput } from "@/features/account/types";
+import type { Role, User, UserInput, UserUpdateInput } from "@/features/account/types";
 
 export type PageParams = {
   page?: number;
@@ -12,6 +12,10 @@ export function listUsers(params: PageParams = {}): Promise<Envelope<User[]>> {
 
 export function createUser(input: UserInput): Promise<Envelope<unknown>> {
   return api.post<Envelope<unknown>>("/User", input);
+}
+
+export function updateUser(userId: string, input: UserUpdateInput): Promise<Envelope<unknown>> {
+  return api.put<Envelope<unknown>>(`/User/${encodeURIComponent(userId)}`, input);
 }
 
 export function listRoles(): Promise<Envelope<Role[]>> {

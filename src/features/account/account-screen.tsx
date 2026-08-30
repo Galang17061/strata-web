@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { UserPlus } from "lucide-react";
+import { Pencil, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { EmptyState } from "@/components/brand/empty-state";
 import { EmptyBlocksIllustration } from "@/components/brand/illustrations";
@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { TablePagination } from "@/components/ui/table-pagination";
 import { listUsers } from "@/features/account/api";
 import { RoleBadge } from "@/features/account/role-badge";
+import type { User } from "@/features/account/types";
 import { UserSheet } from "@/features/account/user-sheet";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
@@ -44,6 +45,15 @@ export function AccountScreen() {
   const rows = users.data?.data ?? [];
   const meta = users.data?.meta ?? null;
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [editing, setEditing] = useState<User | null>(null);
+  const openCreate = () => {
+    setEditing(null);
+    setSheetOpen(true);
+  };
+  const openEdit = (user: User) => {
+    setEditing(user);
+    setSheetOpen(true);
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,7 +61,7 @@ export function AccountScreen() {
         title="Account management"
         description={users.data ? `${countOf(meta?.totalData ?? rows.length, "person", "people")} can sign in.` : "Who can sign in, and what each of them may do."}
         actions={
-          <Button onClick={() => setSheetOpen(true)}>
+          <Button onClick={openCreate}>
             <UserPlus /> New person
           </Button>
         }
@@ -70,6 +80,9 @@ export function AccountScreen() {
               <TableHead>Username</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead className="w-24 text-right">
+                <span className="sr-only">Actions</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -80,6 +93,11 @@ export function AccountScreen() {
                 <TableCell className="text-foreground-muted">{user.email}</TableCell>
                 <TableCell>
                   <RoleBadge roleName={user.roleName} />
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button variant="ghost" size="icon-sm" aria-label={`Edit ${user.fullName}`} onClick={() => openEdit(user)}>
+                    <Pencil />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -100,7 +118,7 @@ export function AccountScreen() {
           plural="people"
         />
       ) : null}
-      <UserSheet open={sheetOpen} onOpenChange={setSheetOpen} />
+      <UserSheet open={sheetOpen} onOpenChange={setSheetOpen} user={editing} />
     </div>
   );
 }

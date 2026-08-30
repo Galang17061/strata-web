@@ -20,3 +20,9 @@ export type UserInput = {
   password: string;
   roleId: string;
 };
+
+export type UserUpdateInput = {
+  fullname: string;
+  userName: string;
+  roleId: string;
+};

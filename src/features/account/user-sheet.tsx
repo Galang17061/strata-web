@@ -21,12 +21,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { createUser, listRoles } from "@/features/account/api";
+import { createUser, listRoles, updateUser } from "@/features/account/api";
 import { roleLabel } from "@/features/account/role-badge";
+import type { User } from "@/features/account/types";
 import { ApiError } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query-keys";
 
-const schema = z.object({
+const baseSchema = z.object({
   fullname: z.string().trim().min(1, "Give the person a name.").max(255, "Keep the name under 255 characters."),
   userName: z
     .string()
@@ -34,14 +35,24 @@ const schema = z.object({
     .min(3, "A username needs at least 3 characters.")
     .max(50, "Keep the username under 50 characters.")
     .regex(/^[a-z0-9._-]+$/i, "Use letters, digits, dots, dashes or underscores only."),
-  email: z.string().trim().email("Enter an email address that looks right."),
-  password: z.string().min(8, "Use at least 8 characters."),
+  email: z.string().trim(),
+  password: z.string(),
   roleId: z.string().min(1, "Pick the role they will have."),
 });
 
-type FormValues = z.infer<typeof schema>;
+const createSchema = baseSchema.extend({
+  email: z.string().trim().email("Enter an email address that looks right."),
+  password: z.string().min(8, "Use at least 8 characters."),
+});
+
+type FormValues = z.infer<typeof baseSchema>;
 
 const emptyValues: FormValues = { fullname: "", userName: "", email: "", password: "", roleId: "" };
+
+function valuesOf(user: User | null | undefined): FormValues {
+  if (!user) return emptyValues;
+  return { fullname: user.fullName, userName: user.userName, email: user.email, password: "", roleId: user.roleId };
+}
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
@@ -55,30 +66,37 @@ function FieldError({ id, message }: { id: string; message?: string }) {
 type UserSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  user?: User | null;
 };
 
-export function UserSheet({ open, onOpenChange }: UserSheetProps) {
+export function UserSheet({ open, onOpenChange, user }: UserSheetProps) {
   const queryClient = useQueryClient();
+  const editing = Boolean(user);
   const [showPassword, setShowPassword] = useState(false);
   const roles = useQuery({ queryKey: queryKeys.users.roles, queryFn: listRoles, enabled: open });
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: emptyValues,
+    resolver: zodResolver(editing ? baseSchema : createSchema),
+    defaultValues: valuesOf(user),
     mode: "onBlur",
   });
 
   useEffect(() => {
     if (open) {
-      form.reset(emptyValues);
+      form.reset(valuesOf(user));
       setShowPassword(false);
     }
-  }, [open, form]);
+  }, [open, user, form]);
 
   const mutation = useMutation({
-    mutationFn: (values: FormValues) => createUser(values),
+    mutationFn: (values: FormValues) =>
+      user
+        ? updateUser(user.id, { fullname: values.fullname, userName: values.userName, roleId: values.roleId })
+        : createUser(values),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
-      toast.success("Person added", { description: `${form.getValues("fullname")} can sign in now.` });
+      toast.success(editing ? "Person updated" : "Person added", {
+        description: editing ? form.getValues("fullname") : `${form.getValues("fullname")} can sign in now.`,
+      });
       onOpenChange(false);
     },
     onError: (error) => {
@@ -100,8 +118,10 @@ export function UserSheet({ open, onOpenChange }: UserSheetProps) {
       <SheetContent>
         <form onSubmit={form.handleSubmit((values) => mutation.mutate(values))} noValidate className="flex h-full flex-col">
           <SheetHeader>
-            <SheetTitle>New person</SheetTitle>
-            <SheetDescription>Someone who will sign in to Strata.</SheetDescription>
+            <SheetTitle>{editing ? "Edit person" : "New person"}</SheetTitle>
+            <SheetDescription>
+              {editing ? "Change their name, username or role." : "Someone who will sign in to Strata."}
+            </SheetDescription>
           </SheetHeader>
           <SheetBody className="flex flex-col gap-5">
             <div className="flex flex-col gap-1.5">
@@ -130,51 +150,62 @@ export function UserSheet({ open, onOpenChange }: UserSheetProps) {
               />
               <FieldError id="user-username-error" message={errors.userName?.message} />
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="user-email">Email</Label>
-              <Input
-                id="user-email"
-                type="email"
-                placeholder="ada@example.com"
-                autoComplete="off"
-                aria-invalid={errors.email ? true : undefined}
-                aria-describedby={errors.email ? "user-email-error" : undefined}
-                {...form.register("email")}
-              />
-              <FieldError id="user-email-error" message={errors.email?.message} />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="user-password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="user-password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  className="pr-10"
-                  aria-invalid={errors.password ? true : undefined}
-                  aria-describedby={errors.password ? "user-password-error" : "user-password-help"}
-                  {...form.register("password")}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  className="absolute top-0.5 right-0.5 z-10"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  aria-pressed={showPassword}
-                  onClick={() => setShowPassword((current) => !current)}
-                >
-                  {showPassword ? <EyeOff /> : <Eye />}
-                </Button>
+            {editing ? (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="user-email">Email</Label>
+                <Input id="user-email" type="email" value={user?.email ?? ""} readOnly aria-readonly className="text-foreground-muted" />
+                <p className="text-caption text-foreground-muted normal-case">An email stays as it was given.</p>
               </div>
-              {errors.password ? (
-                <FieldError id="user-password-error" message={errors.password.message} />
-              ) : (
-                <p id="user-password-help" className="text-caption text-foreground-muted normal-case">
-                  At least 8 characters. They can change it after signing in.
-                </p>
+            ) : null}
+            {editing ? null : (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="user-email-new">Email</Label>
+                <Input
+                  id="user-email-new"
+                  type="email"
+                  placeholder="ada@example.com"
+                  autoComplete="off"
+                  aria-invalid={errors.email ? true : undefined}
+                  aria-describedby={errors.email ? "user-email-error" : undefined}
+                  {...form.register("email")}
+                />
+                <FieldError id="user-email-error" message={errors.email?.message} />
+              </div>
+            )}
+            {editing ? null : (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="user-password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="user-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    className="pr-10"
+                    aria-invalid={errors.password ? true : undefined}
+                    aria-describedby={errors.password ? "user-password-error" : "user-password-help"}
+                    {...form.register("password")}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="absolute top-0.5 right-0.5 z-10"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                    onClick={() => setShowPassword((current) => !current)}
+                  >
+                    {showPassword ? <EyeOff /> : <Eye />}
+                  </Button>
+                </div>
+                {errors.password ? (
+                  <FieldError id="user-password-error" message={errors.password.message} />
+                ) : (
+                  <p id="user-password-help" className="text-caption text-foreground-muted normal-case">
+                    At least 8 characters. They can change it after signing in.
+                  </p>
               )}
             </div>
+            )}
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="user-role">Role</Label>
               <Controller
@@ -210,7 +241,7 @@ export function UserSheet({ open, onOpenChange }: UserSheetProps) {
               </Button>
             </SheetClose>
             <Button type="submit" loading={mutation.isPending}>
-              Add person
+              {editing ? "Save changes" : "Add person"}
             </Button>
           </SheetFooter>
         </form>
