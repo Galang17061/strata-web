@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Info, PanelLeft, PanelRight, Save } from "lucide-react";
+import { Info, PanelLeft, PanelRight, RefreshCw, Save } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/brand/empty-state";
@@ -36,6 +36,7 @@ import { RbdCanvas } from "@/features/workspace/canvas/canvas";
 import { ComponentSheet } from "@/features/workspace/component-sheet";
 import { ContextPanel } from "@/features/workspace/context-panel";
 import { AddComponentDialog, HierarchyDialog } from "@/features/workspace/dialogs";
+import { RecalculateDialog } from "@/features/workspace/recalculate-dialog";
 import {
   ancestorsOf,
   buildCanvas,
@@ -81,6 +82,8 @@ export function WorkspaceScreen() {
   const [hierarchyDialog, setHierarchyDialog] = useState<{ parent: TreeNode | null; node: TreeNode | null } | null>(null);
   const [componentDialog, setComponentDialog] = useState<TreeNode | null>(null);
   const [pendingDelete, setPendingDelete] = useState<TreeAction | null>(null);
+  const [recalculateOpen, setRecalculateOpen] = useState(false);
+  const [recalculating, setRecalculating] = useState(false);
   const canvasState = useRef<{ nodes: CanvasNode[]; edges: CanvasEdge[] }>({ nodes: [], edges: [] });
 
   useEffect(() => {
@@ -330,6 +333,9 @@ export function WorkspaceScreen() {
         <div className="ml-auto flex items-center gap-2">
           {dirty ? <span className="text-caption text-warning normal-case tracking-normal">Unsaved changes</span> : null}
           <PermissionGate moduleName={MODULES.DESIGN_FOR_RELIABILITY} permission="update">
+            <Button size="sm" variant="secondary" onClick={() => setRecalculateOpen(true)} loading={recalculating} disabled={dirty}>
+              <RefreshCw /> Recalculate
+            </Button>
             <Button size="sm" onClick={() => save.mutate()} loading={save.isPending} disabled={!dirty || !canvas}>
               <Save /> Save drawing
             </Button>
@@ -359,7 +365,7 @@ export function WorkspaceScreen() {
                 nodes={canvas.nodes}
                 edges={canvas.edges}
                 editable={permissions.canUpdate}
-                busy={save.isPending}
+                busy={save.isPending || recalculating}
                 onDirty={setDirty}
                 onSelect={setSelectedCode}
                 onOpenLayer={openLayer}
@@ -389,6 +395,14 @@ export function WorkspaceScreen() {
         </SheetContent>
       </Sheet>
 
+      <RecalculateDialog
+        open={recalculateOpen}
+        onOpenChange={setRecalculateOpen}
+        rbdSystemId={rbdSystemId}
+        tree={treeData}
+        onStarted={() => setRecalculating(true)}
+        onSettled={() => setRecalculating(false)}
+      />
       <ComponentSheet
         node={sheetNode}
         open={Boolean(sheetNode)}

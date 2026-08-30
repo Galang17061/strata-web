@@ -15,6 +15,7 @@ export const queryKeys = {
     total: (rbdSystemId: string) => ["systems", "total", rbdSystemId] as const,
   },
   hierarchy: {
+    children: (parentId: string) => ["hierarchy", "children", parentId] as const,
     reliability: (hierarchyId: string) => ["hierarchy", "reliability", hierarchyId] as const,
     history: (hierarchyId: string, params: Record<string, unknown>) =>
       ["hierarchy", "history", hierarchyId, params] as const,

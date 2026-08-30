@@ -65,6 +65,18 @@ export function ancestorsOf(tree: SystemTree, hierarchyId: string): TreeNode[] {
   return path;
 }
 
+export function allComponents(tree: SystemTree): TreeComponent[] {
+  const found: TreeComponent[] = [];
+  const walk = (nodes: TreeNode[] | null | undefined) => {
+    for (const node of nodes ?? []) {
+      found.push(...(node.components ?? []));
+      walk(node.hierarchy);
+    }
+  };
+  walk(tree.hierarchy);
+  return found;
+}
+
 export function parentLevelOfComponent(tree: SystemTree, systemComponentId: string): TreeNode | null {
   const walk = (nodes: TreeNode[] | null | undefined): TreeNode | null => {
     for (const node of nodes ?? []) {

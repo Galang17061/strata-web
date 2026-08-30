@@ -129,6 +129,12 @@ export function hierarchyReliability(hierarchyId: string): Promise<Envelope<Hier
   return api.get<Envelope<HierarchyCalculation>>(`/ReliabilityTotal/hierarchy/${encodeURIComponent(hierarchyId)}/reliability`);
 }
 
+export function updateRunningHours(rbdSystemId: string, runningHours: number): Promise<Envelope<null>> {
+  return api.put<Envelope<null>>(`/ReliabilityTotal/update-running-hours${queryString({ rbdSystemId, runningHours })}`, undefined, {
+    silent: true,
+  });
+}
+
 export function updateSystemFormula(rbdSystemId: string, formula: string): Promise<Envelope<string>> {
   return api.put<Envelope<string>>(`/ReliabilityTotal/updateFormula${queryString({ rbdSystemId, formula })}`);
 }
