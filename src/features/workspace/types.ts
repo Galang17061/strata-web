@@ -139,6 +139,13 @@ export type FailureEvent = {
   updatedBy: string | null;
 };
 
+export type FailureEventInput = {
+  systemComponentId: string;
+  failureDate: string;
+  failureNumber: number;
+  runningHours: number;
+};
+
 export type SystemTotal = {
   rbdSystemId: string;
   systemName: string | null;

@@ -10,6 +10,7 @@ import type {
   DrawingNodeView,
   DrawingScope,
   FailureEvent,
+  FailureEventInput,
   HierarchyCalculation,
   HierarchyCreateInput,
   HierarchyUpdateInput,
@@ -90,6 +91,10 @@ export function listFailureEvents(
   params: { page: number; pageSize: number },
 ): Promise<Envelope<FailureEvent[]>> {
   return api.get<Envelope<FailureEvent[]>>(`/ReliabilityEditor/failureEvent${queryString({ systemComponentId, ...params })}`);
+}
+
+export function createFailureEvents(inputs: FailureEventInput[]): Promise<Envelope<FailureEventInput[]>> {
+  return api.post<Envelope<FailureEventInput[]>>("/ReliabilityEditor/failureEvent", inputs);
 }
 
 export function systemTotal(rbdSystemId: string): Promise<Envelope<SystemTotal>> {
