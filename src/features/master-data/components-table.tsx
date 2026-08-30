@@ -16,7 +16,7 @@ import { EmptyBlocksIllustration } from "@/components/brand/illustrations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { splitCompatibility } from "@/features/master-data/compatibility-picker";
 import type { MasterComponent } from "@/features/master-data/types";
 import { formatCount, formatFailureRate, formatMoney } from "@/lib/format";
@@ -186,6 +186,7 @@ export function ComponentsTable({
 
   return (
     <Table dense={dense}>
+      <TableCaption className="sr-only">Parts in the catalogue</TableCaption>
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id} className="hover:bg-transparent">

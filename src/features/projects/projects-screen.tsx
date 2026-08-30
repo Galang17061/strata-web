@@ -13,7 +13,7 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PermissionGate } from "@/features/auth/permission-gate";
 import { MODULES } from "@/features/auth/roles";
 import { usePermissions } from "@/features/auth/session";
@@ -236,6 +236,7 @@ export function ProjectsScreen() {
         </Stagger>
       ) : (
         <Table>
+          <TableCaption className="sr-only">Projects with how many systems each holds</TableCaption>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Project</TableHead>

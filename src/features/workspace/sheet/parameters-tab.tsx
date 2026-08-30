@@ -5,7 +5,7 @@ import { Sigma, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { fitDistribution, getComponent, listWeibullParameters } from "@/features/workspace/api";
 import { distributionOf, type Distribution } from "@/features/workspace/sheet/properties-tab";
 import { formatCount, formatDate, formatReliability } from "@/lib/format";
@@ -86,6 +86,7 @@ export function ParametersTab({ systemComponentId, canEdit }: ParametersTabProps
       <div className="flex flex-col gap-3">
         <p className="text-caption uppercase text-foreground-muted">Median-rank regression points</p>
         <Table dense>
+          <TableCaption className="sr-only">Weibull fits this part has been given</TableCaption>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Fitted</TableHead>

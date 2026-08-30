@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { importComponents, listVendors } from "@/features/master-data/api";
 import { assessRow, readImportRows, type ImportRow } from "@/features/master-data/import-rows";
 import type { ImportResult } from "@/features/master-data/types";
@@ -183,6 +183,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
               {countOf(ready, "row")} ready{flagged > 0 ? `, ${countOf(flagged, "row")} will be skipped` : ""}.
             </p>
             <Table containerClassName="max-h-72" dense>
+              <TableCaption className="sr-only">Rows read from the workbook and whether each will go in</TableCaption>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   <TableHead numeric>Row</TableHead>

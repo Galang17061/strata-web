@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PermissionGate } from "@/features/auth/permission-gate";
 import { MODULES } from "@/features/auth/roles";
 import { usePermissions } from "@/features/auth/session";
@@ -135,6 +135,7 @@ export function ProjectDetailScreen() {
         </Card>
       ) : (
         <Table>
+          <TableCaption className="sr-only">Systems modelled in this project</TableCaption>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>System</TableHead>

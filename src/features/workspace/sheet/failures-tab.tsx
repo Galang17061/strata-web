@@ -9,7 +9,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { createFailureEvents, deleteFailureEvent, deleteFailureEventsOfComponent, listFailureEvents } from "@/features/workspace/api";
 import type { FailureEvent } from "@/features/workspace/types";
 import { formatCount, formatDate } from "@/lib/format";
@@ -195,6 +195,7 @@ export function FailuresTab({ systemComponentId, canEdit }: FailuresTabProps) {
         </form>
       ) : null}
       <Table dense>
+        <TableCaption className="sr-only">Every time this part stopped working</TableCaption>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead numeric>#</TableHead>

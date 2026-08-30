@@ -18,7 +18,7 @@ import { ReliabilityBadge } from "@/components/reliability/reliability-badge";
 import { Sparkline } from "@/components/reliability/sparkline";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { plotTotals, systemPlot } from "@/features/projects/api";
 import { workspaceHref as workspaceLink } from "@/features/projects/links";
 import type { ProjectSystem } from "@/features/projects/types";
@@ -135,6 +135,7 @@ export function SystemsTable({ systems, loading = false, emptyAction }: SystemsT
 
   return (
     <Table>
+      <TableCaption className="sr-only">Every system with its latest score and trend</TableCaption>
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id} className="hover:bg-transparent">

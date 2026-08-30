@@ -9,7 +9,7 @@ import { EmptyBlocksIllustration } from "@/components/brand/illustrations";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { AccessSheet } from "@/features/account/access-sheet";
 import { deleteUser, listUsers } from "@/features/account/api";
@@ -94,6 +94,7 @@ export function AccountScreen() {
         </div>
       ) : (
         <Table>
+          <TableCaption className="sr-only">People who can sign in and their roles</TableCaption>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Name</TableHead>

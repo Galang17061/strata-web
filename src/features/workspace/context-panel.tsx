@@ -19,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { updateHierarchy, updateSystemFormula } from "@/features/workspace/api";
 import { HistoryTimeline } from "@/features/workspace/history-timeline";
 import { connectionLabel } from "@/features/workspace/canvas/block-node";
@@ -55,6 +55,7 @@ function InputParameters({ parameters, onPickCode }: { parameters: ComponentInpu
     <div className="flex flex-col gap-2">
       <span className="text-caption uppercase text-foreground-muted">Input parameters</span>
       <Table dense containerClassName="rounded-sm">
+        <TableCaption className="sr-only">Part figures that feed the selected layer</TableCaption>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead>Part</TableHead>
