@@ -22,6 +22,7 @@ import { usePermissions } from "@/features/auth/session";
 import { listAllSystems, listProjects } from "@/features/projects/api";
 import { projectHref } from "@/features/projects/links";
 import { ProjectDialog } from "@/features/projects/project-dialog";
+import { SystemPreview } from "@/features/projects/system-preview";
 import type { Project, ProjectSystem } from "@/features/projects/types";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs, usePaletteScope } from "@/features/shell/use-breadcrumbs";
@@ -36,18 +37,24 @@ type ViewMode = "grid" | "table";
 type ProjectStats = {
   systems: number;
   best: number | null;
+  bestId: string | null;
+  latestId: string | null;
   updatedAt: string | null;
 };
 
 function statsFor(systems: ProjectSystem[]): Map<string, ProjectStats> {
   const map = new Map<string, ProjectStats>();
   for (const system of systems) {
-    const current = map.get(system.projectId) ?? { systems: 0, best: null, updatedAt: null };
+    const current = map.get(system.projectId) ?? { systems: 0, best: null, bestId: null, latestId: null, updatedAt: null };
     current.systems += 1;
-    if (typeof system.reliabilityTotal === "number") {
-      current.best = current.best === null ? system.reliabilityTotal : Math.max(current.best, system.reliabilityTotal);
+    if (typeof system.reliabilityTotal === "number" && (current.best === null || system.reliabilityTotal > current.best)) {
+      current.best = system.reliabilityTotal;
+      current.bestId = system.rbdSystemId;
     }
-    if (!current.updatedAt || system.updatedAt > current.updatedAt) current.updatedAt = system.updatedAt;
+    if (!current.updatedAt || system.updatedAt > current.updatedAt) {
+      current.updatedAt = system.updatedAt;
+      current.latestId = system.rbdSystemId;
+    }
     map.set(system.projectId, current);
   }
   return map;
@@ -71,6 +78,13 @@ function ProjectCard({ project, stats, onEdit, canEdit }: { project: Project; st
           </Button>
         ) : null}
       </div>
+      {stats?.bestId ?? stats?.latestId ? (
+        <SystemPreview rbdSystemId={(stats?.bestId ?? stats?.latestId) as string} />
+      ) : (
+        <div className="flex h-24 items-center justify-center rounded-sm border border-dashed border-border text-caption text-foreground-subtle">
+          No systems yet
+        </div>
+      )}
       <div className="flex items-end justify-between gap-3">
         <div className="flex flex-col">
           <span className="text-caption uppercase text-foreground-muted">Systems</span>
