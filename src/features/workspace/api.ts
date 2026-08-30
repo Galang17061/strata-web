@@ -16,6 +16,7 @@ import type {
   HierarchyUpdateInput,
   HierarchyView,
   SystemTotal,
+  WeibullParameter,
 } from "@/features/workspace/types";
 
 const drawing = "/ReliabilityEditor/rbdDrawing";
@@ -103,6 +104,10 @@ export function deleteFailureEvent(failureEventId: string): Promise<Envelope<nul
 
 export function deleteFailureEventsOfComponent(systemComponentId: string): Promise<Envelope<null>> {
   return api.delete<Envelope<null>>(`/ReliabilityEditor/failureEvent/bySystemComponent/${encodeURIComponent(systemComponentId)}`);
+}
+
+export function listWeibullParameters(systemComponentId: string): Promise<Envelope<WeibullParameter[]>> {
+  return api.get<Envelope<WeibullParameter[]>>(`/SystemComponentProperties/${encodeURIComponent(systemComponentId)}/weibull-parameters`);
 }
 
 export function systemTotal(rbdSystemId: string): Promise<Envelope<SystemTotal>> {

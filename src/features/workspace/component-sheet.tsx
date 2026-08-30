@@ -5,6 +5,7 @@ import { Sheet, SheetBody, SheetContent, SheetDescription, SheetHeader, SheetTit
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CanvasNode } from "@/features/workspace/model";
 import { FailuresTab } from "@/features/workspace/sheet/failures-tab";
+import { ParametersTab } from "@/features/workspace/sheet/parameters-tab";
 import { PropertiesTab } from "@/features/workspace/sheet/properties-tab";
 
 type ComponentSheetProps = {
@@ -54,6 +55,8 @@ export function ComponentSheet({ node, open, canEdit, onOpenChange }: ComponentS
                   <PropertiesTab key={node.data.entityId} systemComponentId={node.data.entityId} canEdit={canEdit} />
                 ) : tab.value === "failures" && node ? (
                   <FailuresTab key={node.data.entityId} systemComponentId={node.data.entityId} canEdit={canEdit} />
+                ) : tab.value === "parameters" && node ? (
+                  <ParametersTab key={node.data.entityId} systemComponentId={node.data.entityId} canEdit={canEdit} />
                 ) : (
                   <p className="text-body-sm text-foreground-muted">{tab.hint}</p>
                 )}

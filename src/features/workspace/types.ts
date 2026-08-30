@@ -146,6 +146,17 @@ export type FailureEventInput = {
   runningHours: number;
 };
 
+export type WeibullParameter = {
+  weibullParameterId: string;
+  systemComponentId: string;
+  failureTime: number | null;
+  scaleParameter: number | null;
+  shapeParameter: number | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  totalReliability: number | null;
+};
+
 export type SystemTotal = {
   rbdSystemId: string;
   systemName: string | null;
