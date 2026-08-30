@@ -9,6 +9,10 @@ export type Vendor = {
   updatedBy: string | null;
 };
 
+export type VendorInput = {
+  manufacturerName: string;
+};
+
 export type MasterComponent = {
   componentId: string;
   componentName: string;

@@ -5,11 +5,16 @@ import Image from "next/image";
 import { useState } from "react";
 import { EmptyState } from "@/components/brand/empty-state";
 import { LayersIllustration } from "@/components/brand/illustrations";
+import { Plus } from "lucide-react";
 import { Stagger, StaggerItem } from "@/components/motion/reveal";
+import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PermissionGate } from "@/features/auth/permission-gate";
+import { MODULES } from "@/features/auth/roles";
 import { listVendors } from "@/features/master-data/api";
 import type { Vendor } from "@/features/master-data/types";
+import { VendorDialog } from "@/features/master-data/vendor-dialog";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
 import { filesUrl } from "@/lib/files-url";
@@ -88,12 +93,22 @@ export function VendorsScreen() {
     queryFn: () => listVendors(listParams),
   });
   const rows = vendors.data?.data ?? [];
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const newVendorButton = (
+    <PermissionGate moduleName={MODULES.MASTER_DATA} permission="create">
+      <Button onClick={() => setDialogOpen(true)}>
+        <Plus /> New vendor
+      </Button>
+    </PermissionGate>
+  );
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Vendors"
         description={vendors.data ? `${formatCount(vendors.data.meta?.totalData ?? rows.length)} manufacturers your parts come from.` : "The manufacturers your parts come from."}
+        actions={newVendorButton}
       />
       {vendors.isPending ? (
         <VendorSkeleton />
@@ -102,6 +117,7 @@ export function VendorsScreen() {
           illustration={<LayersIllustration />}
           title="No vendors yet"
           description="Add the first manufacturer so parts can be tied to who made them."
+          action={newVendorButton}
           className="rounded-md border border-dashed border-border"
         />
       ) : (
@@ -113,6 +129,7 @@ export function VendorsScreen() {
           ))}
         </Stagger>
       )}
+      <VendorDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );
 }
