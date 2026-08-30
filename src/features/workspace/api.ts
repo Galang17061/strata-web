@@ -3,6 +3,7 @@ import type {
   ComponentCreateInput,
   ComponentDetail,
   ComponentInputParameters,
+  ComponentUpdateInput,
   DrawingEdgeInput,
   DrawingEdgeView,
   DrawingNodeInput,
@@ -73,6 +74,10 @@ export function createComponent(input: ComponentCreateInput): Promise<Envelope<C
 
 export function getComponent(systemComponentId: string): Promise<Envelope<ComponentDetail>> {
   return api.get<Envelope<ComponentDetail>>(`/SystemComponentProperties/${encodeURIComponent(systemComponentId)}`);
+}
+
+export function updateComponent(systemComponentId: string, input: ComponentUpdateInput): Promise<Envelope<ComponentDetail>> {
+  return api.put<Envelope<ComponentDetail>>(`/SystemComponentProperties/${encodeURIComponent(systemComponentId)}`, input);
 }
 
 export function deleteComponent(systemComponentId: string): Promise<Envelope<unknown>> {

@@ -111,6 +111,22 @@ export type ComponentCreateInput = {
   vendor: string;
 };
 
+export type ComponentUpdateInput = {
+  rbdSystemId: string;
+  componentTagNumber: string;
+  vendor: string;
+  formulaCode: string;
+  distributionType: string;
+  failureRate: number;
+  runningHours: number;
+  scaleParameter: number;
+  shapeParameter: number;
+  connectionType: string;
+  activeComponent: number;
+  totalComponent: number;
+  mtbf: number;
+};
+
 export type SystemTotal = {
   rbdSystemId: string;
   systemName: string | null;

@@ -1,13 +1,16 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Save } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getComponent } from "@/features/workspace/api";
-import type { ComponentDetail } from "@/features/workspace/types";
+import { getComponent, updateComponent } from "@/features/workspace/api";
+import type { ComponentDetail, ComponentUpdateInput } from "@/features/workspace/types";
 import { formatFailureRate, formatHours, formatReliability } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
 import { cn } from "@/lib/utils";
@@ -65,6 +68,39 @@ export function applyWiringRules(form: PropertiesForm): PropertiesForm {
 
 function digitsOnly(value: string): string {
   return value.replace(/[^\d]/g, "");
+}
+
+const connectionTypeOf: Record<Wiring, string> = { series: "Series", parallel: "Parallel", partial: "Partial" };
+
+export function formProblem(form: PropertiesForm): string | null {
+  const total = Number(form.total);
+  const active = Number(form.active);
+  const hours = Number(form.runningHours);
+  if (!form.runningHours || !Number.isFinite(hours) || hours < 0) return "Running hours must be zero or more.";
+  if (!Number.isInteger(total) || total < 1) return "There must be at least one identical unit.";
+  if (!Number.isInteger(active) || active < 1) return "At least one unit must work.";
+  if (active > total) return "More units cannot be required than exist.";
+  if (form.wiring === "partial" && total < 3) return "k out of n needs at least three identical units.";
+  if (form.wiring === "partial" && (active < 2 || active === total)) return "For k out of n, k must be at least 2 and less than n.";
+  return null;
+}
+
+export function toUpdateInput(detail: ComponentDetail, form: PropertiesForm): ComponentUpdateInput {
+  return {
+    rbdSystemId: detail.rbdSystemId ?? "",
+    componentTagNumber: detail.componentTagNumber ?? "",
+    vendor: detail.vendor ?? "",
+    formulaCode: detail.formulaCode ?? "",
+    distributionType: form.distribution,
+    failureRate: detail.failureRate ?? 0,
+    runningHours: Number(form.runningHours),
+    scaleParameter: detail.scaleParameter ?? 0,
+    shapeParameter: detail.shapeParameter ?? 0,
+    connectionType: connectionTypeOf[form.wiring],
+    activeComponent: Number(form.active),
+    totalComponent: Number(form.total),
+    mtbf: detail.mtbf ?? 0,
+  };
 }
 
 function UnitField({
@@ -149,18 +185,40 @@ type PropertiesTabProps = {
 };
 
 export function PropertiesTab({ systemComponentId, canEdit }: PropertiesTabProps) {
+  const queryClient = useQueryClient();
   const detail = useQuery({
     queryKey: queryKeys.components.detail(systemComponentId),
     queryFn: () => getComponent(systemComponentId),
   });
   const data = detail.data?.data ?? null;
   const [form, setForm] = useState<PropertiesForm | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
 
   useEffect(() => {
     if (data) setForm(formFromDetail(data));
   }, [data]);
 
-  const update = (patch: Partial<PropertiesForm>) => setForm((current) => (current ? applyWiringRules({ ...current, ...patch }) : current));
+  const update = (patch: Partial<PropertiesForm>) => {
+    setProblem(null);
+    setForm((current) => (current ? applyWiringRules({ ...current, ...patch }) : current));
+  };
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!data || !form) return;
+      await updateComponent(systemComponentId, toUpdateInput(data, form));
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.components.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.systems.all });
+      await queryClient.invalidateQueries({ queryKey: ["drawing"] });
+      await queryClient.invalidateQueries({ queryKey: ["hierarchy"] });
+      toast.success("Properties saved", { description: data?.componentName });
+    },
+    onError: (error) => setProblem(error.message),
+  });
+
+  const dirty = data && form ? JSON.stringify(form) !== JSON.stringify(formFromDetail(data)) : false;
 
   if (detail.isPending || !form) {
     return (
@@ -246,6 +304,44 @@ export function PropertiesTab({ systemComponentId, canEdit }: PropertiesTabProps
       </div>
 
       <FittedFigures detail={{ ...data, distributionType: form.distribution }} />
+
+      {canEdit ? (
+        <div className="flex flex-col gap-2 border-t border-border pt-4">
+          {problem ? (
+            <p role="alert" className="rounded-sm bg-danger/10 px-3 py-2 text-body-sm text-danger">
+              {problem}
+            </p>
+          ) : null}
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={!dirty || save.isPending}
+              onClick={() => {
+                setForm(formFromDetail(data));
+                setProblem(null);
+              }}
+            >
+              Reset
+            </Button>
+            <Button
+              type="button"
+              loading={save.isPending}
+              disabled={!dirty}
+              onClick={() => {
+                const message = formProblem(form);
+                if (message) {
+                  setProblem(message);
+                  return;
+                }
+                save.mutate();
+              }}
+            >
+              <Save /> Save changes
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
