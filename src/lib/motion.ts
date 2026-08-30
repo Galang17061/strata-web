@@ -6,7 +6,8 @@ export type DurationToken =
   | "--dur-slow"
   | "--dur-reveal"
   | "--dur-count"
-  | "--dur-pulse";
+  | "--dur-pulse"
+  | "--dur-scene-loop";
 
 export function durationMs(token: DurationToken): number {
   if (typeof window === "undefined") return 0;

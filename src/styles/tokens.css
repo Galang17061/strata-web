@@ -76,6 +76,7 @@
   --dur-pulse: 600ms;
   --dur-loader: 1200ms;
   --dur-shimmer: 1400ms;
+  --dur-scene-loop: 12000ms;
   --stagger: 40ms;
   --stagger-layer: 60ms;
 
