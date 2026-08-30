@@ -1,5 +1,6 @@
 "use client";
 
+import { Maximize2, Minimize2 } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ export function PlotDialog({ open, onOpenChange, tree, level }: PlotDialogProps)
   const gradientId = useId();
   const [mounted, setMounted] = useState(false);
   const [shown, setShown] = useState<string[]>([]);
+  const [expanded, setExpanded] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -71,11 +73,26 @@ export function PlotDialog({ open, onOpenChange, tree, level }: PlotDialogProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent
+        className={cn(
+          "transition-[width,height,max-width] duration-(--dur-slow) ease-emphasized",
+          expanded ? "h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-none" : "max-w-3xl",
+        )}
+      >
         <DialogHeader>
           <DialogTitle>{plot?.total.name ?? "Reliability over time"}</DialogTitle>
           <DialogDescription>How the chance of this {level.scope === "system" ? "system" : "layer"} still working falls as the hours pass.</DialogDescription>
         </DialogHeader>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="absolute top-4 right-14"
+          aria-label={expanded ? "Shrink the plot" : "Full preview"}
+          aria-pressed={expanded}
+          onClick={() => setExpanded((value) => !value)}
+        >
+          {expanded ? <Minimize2 /> : <Maximize2 />}
+        </Button>
         {loading ? (
           <Skeleton className="h-80 w-full" />
         ) : error || !plot ? (
@@ -83,8 +100,8 @@ export function PlotDialog({ open, onOpenChange, tree, level }: PlotDialogProps)
             {error ?? "Nothing to plot yet. Wire the blocks and save the drawing first."}
           </p>
         ) : (
-          <div className="flex flex-col gap-4">
-            <div className="h-80 w-full">
+          <div className={cn("flex flex-col gap-4", expanded && "min-h-0 flex-1")}>
+            <div className={cn("w-full", expanded ? "min-h-0 flex-1" : "h-80")}>
               {mounted ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={rows} margin={{ top: 8, right: 20, left: -8, bottom: 0 }}>
