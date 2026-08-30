@@ -56,7 +56,7 @@ function VendorLogo({ vendor }: { vendor: Vendor }) {
   const [broken, setBroken] = useState(false);
   if (src && !broken) {
     return (
-      <span className="inline-flex size-16 items-center justify-center overflow-hidden rounded-sm bg-surface-sunken p-1.5">
+      <span className="inline-flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-surface-sunken p-1.5">
         <Image
           src={src}
           alt={`${vendor.manufacturerName} logo`}
@@ -72,7 +72,7 @@ function VendorLogo({ vendor }: { vendor: Vendor }) {
   return (
     <span
       aria-hidden="true"
-      className="inline-flex size-16 items-center justify-center rounded-sm bg-surface-sunken font-mono text-h3 text-foreground-muted"
+      className="inline-flex size-16 shrink-0 items-center justify-center rounded-sm bg-surface-sunken font-mono text-h3 text-foreground-muted"
     >
       {vendorInitials(vendor.manufacturerName)}
     </span>
@@ -89,10 +89,16 @@ type VendorCardProps = {
 
 function VendorCard({ vendor, canEdit, canDelete, onEdit, onDelete }: VendorCardProps) {
   return (
-    <Card className="group h-full gap-4 transition-colors hover:border-border-strong">
-      <div className="flex items-start justify-between gap-3">
-        <VendorLogo vendor={vendor} />
-        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 has-focus-visible:opacity-100">
+    <Card className="group relative h-full gap-4 transition-colors hover:border-border-strong max-sm:flex-row max-sm:items-center max-sm:p-4">
+      <VendorLogo vendor={vendor} />
+      <div className="min-w-0 flex-1">
+        <CardTitle className="truncate">{vendor.manufacturerName}</CardTitle>
+        <CardDescription>
+          {vendor.validUntil ? `Valid until ${formatDate(vendor.validUntil)}` : `Added ${formatDate(vendor.createdAt)}`}
+        </CardDescription>
+      </div>
+      {canEdit || canDelete ? (
+        <div className="flex shrink-0 items-center gap-1 transition-opacity sm:absolute sm:top-4 sm:right-4 sm:opacity-0 sm:group-hover:opacity-100 sm:has-focus-visible:opacity-100">
           {canEdit ? (
             <Button variant="ghost" size="icon-sm" aria-label={`Edit ${vendor.manufacturerName}`} onClick={onEdit}>
               <Pencil />
@@ -110,13 +116,7 @@ function VendorCard({ vendor, canEdit, canDelete, onEdit, onDelete }: VendorCard
             </Button>
           ) : null}
         </div>
-      </div>
-      <div className="min-w-0">
-        <CardTitle className="truncate">{vendor.manufacturerName}</CardTitle>
-        <CardDescription>
-          {vendor.validUntil ? `Valid until ${formatDate(vendor.validUntil)}` : `Added ${formatDate(vendor.createdAt)}`}
-        </CardDescription>
-      </div>
+      ) : null}
     </Card>
   );
 }

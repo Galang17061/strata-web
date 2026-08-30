@@ -155,7 +155,7 @@ export function ComponentsScreen() {
       />
       <MasterDataTabs />
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-0 flex-1 sm:max-w-sm">
+        <div className="relative min-w-0 basis-full sm:flex-1 sm:basis-auto sm:max-w-sm">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-foreground-subtle" aria-hidden="true" />
           <Input
             aria-label="Search components"
@@ -165,7 +165,7 @@ export function ComponentsScreen() {
             className="pl-9"
           />
         </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:ml-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="sm">
