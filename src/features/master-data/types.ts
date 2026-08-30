@@ -24,6 +24,13 @@ export type MasterComponentInput = {
   compatibility: string | null;
 };
 
+export type ImportResult = {
+  success: boolean;
+  successCount: number;
+  updatedCount: number;
+  failedRows: string[];
+};
+
 export type MasterComponent = {
   componentId: string;
   componentName: string;

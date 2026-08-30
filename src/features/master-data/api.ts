@@ -1,5 +1,5 @@
 import { api, queryString, type DownloadedFile, type Envelope } from "@/lib/api/client";
-import type { MasterComponent, MasterComponentInput, Vendor, VendorInput } from "@/features/master-data/types";
+import type { ImportResult, MasterComponent, MasterComponentInput, Vendor, VendorInput } from "@/features/master-data/types";
 import type { ListParams } from "@/features/projects/types";
 
 export function listMasterComponents(params: ListParams = {}): Promise<Envelope<MasterComponent[]>> {
@@ -12,6 +12,12 @@ export function createMasterComponent(input: MasterComponentInput): Promise<Enve
 
 export function updateMasterComponent(componentId: string, input: MasterComponentInput): Promise<Envelope<unknown>> {
   return api.put<Envelope<unknown>>(`/MasterComponent/${encodeURIComponent(componentId)}`, input);
+}
+
+export function importComponents(file: File): Promise<Envelope<ImportResult>> {
+  const form = new FormData();
+  form.append("file", file, file.name);
+  return api.post<Envelope<ImportResult>>("/MasterComponent/import", form);
 }
 
 export function downloadComponentTemplate(): Promise<DownloadedFile> {
