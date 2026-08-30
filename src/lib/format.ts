@@ -50,6 +50,11 @@ export function formatMoney(value: unknown): string {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(parsed);
 }
 
+export function countOf(value: unknown, singular: string, plural = `${singular}s`): string {
+  const parsed = toNumber(value) ?? 0;
+  return `${formatCount(parsed)} ${parsed === 1 ? singular : plural}`;
+}
+
 export function formatCount(value: unknown): string {
   const parsed = toNumber(value);
   if (parsed === null) return EMPTY;

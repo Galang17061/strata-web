@@ -27,7 +27,7 @@ import { MasterDataTabs } from "@/features/master-data/master-data-tabs";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
 import { ApiError } from "@/lib/api/client";
-import { formatCount } from "@/lib/format";
+import { countOf } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
 import { useDebounce } from "@/lib/use-debounce";
 
@@ -96,7 +96,7 @@ export function ComponentsScreen() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Components"
-        description={components.data ? `${formatCount(total)} parts a system can be built from.` : "The catalogue of parts a system can be built from."}
+        description={components.data ? `${countOf(total, "part")} a system can be built from.` : "The catalogue of parts a system can be built from."}
         actions={
           <PermissionGate moduleName={MODULES.MASTER_DATA} permission="create">
             <Button onClick={openCreate}>
@@ -182,7 +182,7 @@ export function ComponentsScreen() {
             setPageSize(size);
             setPage(1);
           }}
-          noun="parts"
+          singular="part"
         />
       ) : null}
       <ComponentDialog open={dialogOpen} onOpenChange={setDialogOpen} component={editing} />

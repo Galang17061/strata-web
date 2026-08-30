@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Meta } from "@/lib/api/client";
-import { formatCount } from "@/lib/format";
+import { countOf, formatCount } from "@/lib/format";
 
 const pageSizes = [10, 25, 50];
 
@@ -14,10 +14,11 @@ type TablePaginationProps = {
   pageSize: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
-  noun?: string;
+  singular?: string;
+  plural?: string;
 };
 
-export function TablePagination({ meta, page, pageSize, onPageChange, onPageSizeChange, noun = "rows" }: TablePaginationProps) {
+export function TablePagination({ meta, page, pageSize, onPageChange, onPageSizeChange, singular = "row", plural }: TablePaginationProps) {
   const total = meta?.totalData ?? 0;
   const first = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const last = Math.min(page * pageSize, total);
@@ -26,7 +27,9 @@ export function TablePagination({ meta, page, pageSize, onPageChange, onPageSize
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 text-body-sm text-foreground-muted">
       <p aria-live="polite">
-        {total === 0 ? `No ${noun}` : `Showing ${formatCount(first)} to ${formatCount(last)} of ${formatCount(total)} ${noun}`}
+        {total === 0
+          ? `No ${plural ?? `${singular}s`}`
+          : `Showing ${formatCount(first)} to ${formatCount(last)} of ${countOf(total, singular, plural)}`}
       </p>
       <div className="flex items-center gap-3">
         <label className="flex items-center gap-2">

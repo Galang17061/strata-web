@@ -23,7 +23,7 @@ import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
 import { ApiError } from "@/lib/api/client";
 import { filesUrl } from "@/lib/files-url";
-import { formatCount, formatDate } from "@/lib/format";
+import { countOf, formatDate } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
 
 const listParams = { page: 1, pageSize: 100 };
@@ -170,7 +170,7 @@ export function VendorsScreen() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Vendors"
-        description={vendors.data ? `${formatCount(vendors.data.meta?.totalData ?? rows.length)} manufacturers your parts come from.` : "The manufacturers your parts come from."}
+        description={vendors.data ? `${countOf(vendors.data.meta?.totalData ?? rows.length, "manufacturer")} your parts come from.` : "The manufacturers your parts come from."}
         actions={newVendorButton}
       />
       <MasterDataTabs />
