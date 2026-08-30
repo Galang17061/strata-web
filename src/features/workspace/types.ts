@@ -76,6 +76,24 @@ export type ComponentInputParameters = {
   componentReliability: number | null;
 };
 
+export type PlotComponentParameters = {
+  systemComponentId: string;
+  componentName: string;
+  vendorName: string | null;
+  failureRate: number | null;
+  runningHours: number | null;
+  formulaCode: string | null;
+  cost: string | null;
+  activeComponent: number | null;
+  totalComponent: number | null;
+  serialNumber: string | null;
+  distributionType: string | null;
+  shapeParameter: number | null;
+  scaleParameter: number | null;
+  componentReliability: number | null;
+  mtbf: number | null;
+};
+
 export type ComponentDetail = {
   systemComponentId: string;
   rbdSystemId: string | null;

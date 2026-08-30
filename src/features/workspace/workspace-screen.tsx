@@ -37,6 +37,7 @@ import { RbdCanvas } from "@/features/workspace/canvas/canvas";
 import { ComponentSheet } from "@/features/workspace/component-sheet";
 import { ContextPanel } from "@/features/workspace/context-panel";
 import { AddComponentDialog, HierarchyDialog } from "@/features/workspace/dialogs";
+import { PlotDialog } from "@/features/workspace/plot/plot-dialog";
 import { RecalculateDialog } from "@/features/workspace/recalculate-dialog";
 import {
   ancestorsOf,
@@ -106,6 +107,7 @@ export function WorkspaceScreen() {
   const [componentDialog, setComponentDialog] = useState<TreeNode | null>(null);
   const [pendingDelete, setPendingDelete] = useState<TreeAction | null>(null);
   const [recalculateOpen, setRecalculateOpen] = useState(false);
+  const [plotOpen, setPlotOpen] = useState(false);
   const [recalculating, setRecalculating] = useState(false);
   const canvasState = useRef<{ nodes: CanvasNode[]; edges: CanvasEdge[] }>({ nodes: [], edges: [] });
 
@@ -336,6 +338,7 @@ export function WorkspaceScreen() {
       onOpenLayer={openLayer}
       onOpenComponent={openComponent}
       onPickCode={setSelectedCode}
+      onPlot={() => setPlotOpen(true)}
     />
   );
 
@@ -420,6 +423,7 @@ export function WorkspaceScreen() {
         </SheetContent>
       </Sheet>
 
+      <PlotDialog open={plotOpen} onOpenChange={setPlotOpen} tree={treeData} level={activeLevel} />
       <RecalculateDialog
         open={recalculateOpen}
         onOpenChange={setRecalculateOpen}

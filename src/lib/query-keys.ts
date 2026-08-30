@@ -21,6 +21,7 @@ export const queryKeys = {
       ["hierarchy", "history", hierarchyId, params] as const,
     inputParameters: (hierarchyId: string) => ["hierarchy", "input-parameters", hierarchyId] as const,
     plot: (hierarchyId: string) => ["hierarchy", "plot", hierarchyId] as const,
+    plotParameters: (hierarchyId: string) => ["hierarchy", "plot-parameters", hierarchyId] as const,
   },
   drawing: {
     nodes: (scope: "system" | "hierarchy", id: string) => ["drawing", "nodes", scope, id] as const,

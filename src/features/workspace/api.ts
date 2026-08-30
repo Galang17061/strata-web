@@ -16,6 +16,7 @@ import type {
   HierarchyUpdateInput,
   HierarchyView,
   HistoryEntry,
+  PlotComponentParameters,
   SystemTotal,
   WeibullParameter,
 } from "@/features/workspace/types";
@@ -70,6 +71,10 @@ export function hierarchyInputParameters(hierarchyId: string): Promise<Envelope<
   return api.get<Envelope<ComponentInputParameters[]>>(
     `/MasterSystem/hierarchy/${encodeURIComponent(hierarchyId)}/input-parameters`,
   );
+}
+
+export function hierarchyPlotParameters(hierarchyId: string): Promise<Envelope<PlotComponentParameters[]>> {
+  return api.get<Envelope<PlotComponentParameters[]>>(`/MasterSystem/hierarchy/${encodeURIComponent(hierarchyId)}/plot-graphic`);
 }
 
 export function createComponent(input: ComponentCreateInput): Promise<Envelope<ComponentDetail>> {

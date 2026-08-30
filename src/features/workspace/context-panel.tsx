@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Boxes, FunctionSquare, Layers, Pencil } from "lucide-react";
+import { ArrowRight, Boxes, ChartArea, FunctionSquare, Layers, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Formula, plainFormulaToTex } from "@/components/formula/formula";
@@ -47,6 +47,7 @@ type ContextPanelProps = {
   onOpenLayer: (node: CanvasNode) => void;
   onOpenComponent: (node: CanvasNode) => void;
   onPickCode?: (code: string) => void;
+  onPlot?: () => void;
 };
 
 function InputParameters({ parameters, onPickCode }: { parameters: ComponentInputParameters[]; onPickCode?: (code: string) => void }) {
@@ -154,7 +155,7 @@ function FormulaDialog({ level, formula, open, onOpenChange }: { level: Level; f
   );
 }
 
-export function ContextPanel({ level, summary, selected, parameters, canEdit, onOpenLayer, onOpenComponent, onPickCode }: ContextPanelProps) {
+export function ContextPanel({ level, summary, selected, parameters, canEdit, onOpenLayer, onOpenComponent, onPickCode, onPlot }: ContextPanelProps) {
   const [formulaOpen, setFormulaOpen] = useState(false);
 
   if (selected) {
@@ -232,6 +233,11 @@ export function ContextPanel({ level, summary, selected, parameters, canEdit, on
           <span className="text-caption uppercase text-foreground-muted">Reliability</span>
           {summary.loading ? <Skeleton className="h-5 w-28 rounded-pill" /> : <ReliabilityBadge value={summary.value} decimals={8} size="sm" />}
         </div>
+        {onPlot ? (
+          <Button variant="secondary" size="sm" className="w-full" onClick={onPlot}>
+            <ChartArea /> Plot over time
+          </Button>
+        ) : null}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-3">
             <span className="flex items-center gap-1.5 text-caption uppercase text-foreground-muted">
