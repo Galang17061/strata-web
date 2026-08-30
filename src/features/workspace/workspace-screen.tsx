@@ -109,7 +109,26 @@ export function WorkspaceScreen() {
   const [recalculateOpen, setRecalculateOpen] = useState(false);
   const [plotOpen, setPlotOpen] = useState(false);
   const [recalculating, setRecalculating] = useState(false);
+  const [treeWidth, setTreeWidth] = useState(280);
+  const [detailsWidth, setDetailsWidth] = useState(340);
   const canvasState = useRef<{ nodes: CanvasNode[]; edges: CanvasEdge[] }>({ nodes: [], edges: [] });
+
+  const startPanelDrag = (side: "tree" | "details") => (event: React.PointerEvent) => {
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = side === "tree" ? treeWidth : detailsWidth;
+    const onMove = (move: PointerEvent) => {
+      const delta = move.clientX - startX;
+      if (side === "tree") setTreeWidth(Math.min(460, Math.max(220, startWidth + delta)));
+      else setDetailsWidth(Math.min(560, Math.max(280, startWidth - delta)));
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
 
   useEffect(() => {
     if (rbdSystemId) setLevel({ scope: "system", id: rbdSystemId });
@@ -377,8 +396,20 @@ export function WorkspaceScreen() {
       <p className="flex items-center gap-2 border-b border-border bg-surface-sunken px-4 py-1 text-caption text-foreground-muted normal-case tracking-normal lg:hidden">
         <Info className="size-3.5" aria-hidden="true" /> The canvas works best on a wider screen.
       </p>
-      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)_340px]">
-        <aside className="hidden min-h-0 border-r border-border bg-surface lg:block">{panels}</aside>
+      <div
+        className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[var(--tree-width)_minmax(0,1fr)_var(--details-width)]"
+        style={{ "--tree-width": `${treeWidth}px`, "--details-width": `${detailsWidth}px` } as React.CSSProperties}
+      >
+        <aside className="relative hidden min-h-0 border-r border-border bg-surface lg:block">
+          {panels}
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize the layers panel"
+            onPointerDown={startPanelDrag("tree")}
+            className="absolute inset-y-0 -right-1 z-10 hidden w-2 cursor-col-resize lg:block"
+          />
+        </aside>
         <section className={cn("relative min-h-0", !canvas && "flex items-center justify-center")} aria-label="Canvas">
           {canvas ? (
             canvas.nodes.length === 0 ? (
@@ -406,7 +437,16 @@ export function WorkspaceScreen() {
             <RbdCanvas key="loading" nodes={emptyNodes} edges={emptyEdges} editable={false} onDirty={() => undefined} onSelect={() => undefined} onOpenLayer={() => undefined} onOpenComponent={() => undefined} onStateChange={onStateChange} />
           )}
         </section>
-        <aside className="hidden min-h-0 border-l border-border bg-surface lg:block">{details}</aside>
+        <aside className="relative hidden min-h-0 border-l border-border bg-surface lg:block">
+          {details}
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize the details panel"
+            onPointerDown={startPanelDrag("details")}
+            className="absolute inset-y-0 -left-1 z-10 hidden w-2 cursor-col-resize lg:block"
+          />
+        </aside>
       </div>
 
       <Sheet open={treeOpen} onOpenChange={setTreeOpen}>
