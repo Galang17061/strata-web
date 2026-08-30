@@ -138,11 +138,11 @@ function UnitField({
 function ReadOnlyRow({ label, symbol, value, children }: { label: string; symbol: string; value: unknown; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3 py-2">
-      <span className="flex items-baseline gap-2 text-caption uppercase text-foreground-muted">
+      <span className="flex min-w-0 flex-wrap items-baseline gap-x-2 text-caption uppercase text-foreground-muted">
         {label}
         <span className="font-mono text-foreground-subtle normal-case">{symbol}</span>
       </span>
-      <PulseValue value={value} className="font-mono text-numeric text-foreground">
+      <PulseValue value={value} className="shrink-0 font-mono text-numeric whitespace-nowrap text-foreground">
         {children}
       </PulseValue>
     </div>

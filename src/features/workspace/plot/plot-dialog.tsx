@@ -146,7 +146,7 @@ export function PlotDialog({ open, onOpenChange, tree, level }: PlotDialogProps)
                         stroke="none"
                         label={{
                           value: reliabilityLabels[threshold.band],
-                          position: "insideTopRight",
+                          position: "insideBottomLeft",
                           fill: `var(--rel-${threshold.band})`,
                           fontSize: 11,
                           fontFamily: "var(--font-manrope)",
