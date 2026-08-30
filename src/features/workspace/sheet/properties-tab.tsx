@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { getComponent } from "@/features/workspace/api";
 import type { ComponentDetail } from "@/features/workspace/types";
+import { formatFailureRate, formatHours, formatReliability } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
 import { cn } from "@/lib/utils";
 
@@ -93,6 +94,51 @@ function UnitField({
         </span>
       </div>
       {hint ? <p className="text-caption text-foreground-muted normal-case tracking-normal">{hint}</p> : null}
+    </div>
+  );
+}
+
+function ReadOnlyRow({ label, symbol, children }: { label: string; symbol: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-2">
+      <span className="flex items-baseline gap-2 text-caption uppercase text-foreground-muted">
+        {label}
+        <span className="font-mono text-foreground-subtle normal-case">{symbol}</span>
+      </span>
+      <span className="font-mono text-numeric text-foreground">{children}</span>
+    </div>
+  );
+}
+
+export function FittedFigures({ detail }: { detail: ComponentDetail }) {
+  const weibull = distributionOf(detail) === "weibull";
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="text-caption uppercase text-foreground-muted">Fitted from the failure log</p>
+      <div className="divide-y divide-border rounded-sm border border-border bg-surface-sunken px-3">
+        <ReadOnlyRow label="Failure rate" symbol="λ">
+          {formatFailureRate(detail.failureRate)}
+        </ReadOnlyRow>
+        <ReadOnlyRow label="Mean time between failures" symbol="MTBF">
+          {formatHours(detail.mtbf)}
+        </ReadOnlyRow>
+        {weibull ? (
+          <>
+            <ReadOnlyRow label="Shape" symbol="β">
+              {formatReliability(detail.shapeParameter, 4)}
+            </ReadOnlyRow>
+            <ReadOnlyRow label="Scale" symbol="η">
+              {formatHours(detail.scaleParameter)}
+            </ReadOnlyRow>
+            <ReadOnlyRow label="Fit" symbol="R²">
+              {formatReliability(detail.regresi, 4)}
+            </ReadOnlyRow>
+          </>
+        ) : null}
+      </div>
+      <p className="text-caption text-foreground-muted normal-case tracking-normal">
+        These are worked out by Strata from the recorded failures and cannot be typed in.
+      </p>
     </div>
   );
 }
@@ -198,6 +244,8 @@ export function PropertiesTab({ systemComponentId, canEdit }: PropertiesTabProps
           onChange={(value) => update({ active: digitsOnly(value) })}
         />
       </div>
+
+      <FittedFigures detail={{ ...data, distributionType: form.distribution }} />
     </div>
   );
 }
