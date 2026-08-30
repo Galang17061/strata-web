@@ -121,7 +121,7 @@ export function VendorsScreen() {
           className="rounded-md border border-dashed border-border"
         />
       ) : (
-        <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <Stagger inView={false} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {rows.map((vendor) => (
             <StaggerItem key={vendor.vendorId}>
               <VendorCard vendor={vendor} />
