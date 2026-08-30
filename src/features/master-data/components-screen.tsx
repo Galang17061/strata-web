@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
-import { Columns3, FileDown, Plus, Rows2, Rows3, Search } from "lucide-react";
+import { Columns3, FileDown, FileUp, Plus, Rows2, Rows3, Search } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import { usePermissions } from "@/features/auth/session";
 import { deleteMasterComponent, downloadComponentTemplate, listMasterComponents } from "@/features/master-data/api";
 import { ComponentDialog } from "@/features/master-data/component-dialog";
 import { ComponentsTable, hideableColumns } from "@/features/master-data/components-table";
+import { ImportDialog } from "@/features/master-data/import-dialog";
 import type { MasterComponent } from "@/features/master-data/types";
 import { MasterDataTabs } from "@/features/master-data/master-data-tabs";
 import { PageHeader } from "@/features/shell/page-header";
@@ -42,6 +43,7 @@ export function ComponentsScreen() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [dense, setDense] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editing, setEditing] = useState<MasterComponent | null>(null);
   const permissions = usePermissions(MODULES.MASTER_DATA);
   const openCreate = () => {
@@ -111,6 +113,11 @@ export function ComponentsScreen() {
             <PermissionGate moduleName={MODULES.MASTER_DATA} permission="download">
               <Button variant="secondary" loading={template.isPending} onClick={() => template.mutate()}>
                 <FileDown /> Template
+              </Button>
+            </PermissionGate>
+            <PermissionGate moduleName={MODULES.MASTER_DATA} permission="create">
+              <Button variant="secondary" onClick={() => setImportOpen(true)}>
+                <FileUp /> Import
               </Button>
             </PermissionGate>
             <PermissionGate moduleName={MODULES.MASTER_DATA} permission="create">
@@ -202,6 +209,7 @@ export function ComponentsScreen() {
         />
       ) : null}
       <ComponentDialog open={dialogOpen} onOpenChange={setDialogOpen} component={editing} />
+      <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
       <ConfirmDialog
         open={removing !== null}
         onOpenChange={(open) => {
