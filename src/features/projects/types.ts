@@ -44,3 +44,51 @@ export type PlotPoint = {
   time: number;
   components: Record<string, PlotComponentValue>;
 };
+
+export type ConnectionType = "Series" | "Parallel";
+
+export type SystemComponentInput = {
+  componentName: string;
+  vendor: string;
+  totalComponent: number;
+  activeComponent: number;
+  connectionType: ConnectionType;
+  formulaCode: string | null;
+};
+
+export type SystemTreeInput = {
+  name: string;
+  connectionType: ConnectionType;
+  formulaCode: string;
+  hierarchy: SystemTreeInput[];
+  components: SystemComponentInput[];
+};
+
+export type TreeComponent = {
+  systemComponentId: string;
+  formulaCode: string | null;
+  componentName: string | null;
+  vendorName: string | null;
+  totalComponent: number | null;
+  activeComponent: number | null;
+  connectionType: string | null;
+  targetEdges: string[] | null;
+};
+
+export type TreeNode = {
+  hierarchyId: string;
+  name: string;
+  connectionType: string | null;
+  formulaCode: string | null;
+  level: number;
+  hierarchy: TreeNode[] | null;
+  components: TreeComponent[] | null;
+};
+
+export type SystemTree = {
+  rbdSystemId: string;
+  projectId: string;
+  projectName: string;
+  systemName: string;
+  hierarchy: TreeNode[] | null;
+};

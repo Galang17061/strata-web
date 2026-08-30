@@ -20,13 +20,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { plotTotals, systemPlot } from "@/features/projects/api";
+import { workspaceHref as workspaceLink } from "@/features/projects/links";
 import type { ProjectSystem } from "@/features/projects/types";
 import { formatDate, formatReliability } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
 import { cn } from "@/lib/utils";
 
 export function workspaceHref(system: Pick<ProjectSystem, "projectId" | "rbdSystemId">): string {
-  return `/workspace/?project=${encodeURIComponent(system.projectId)}&system=${encodeURIComponent(system.rbdSystemId)}`;
+  return workspaceLink(system.projectId, system.rbdSystemId);
 }
 
 function SystemSparkline({ rbdSystemId }: { rbdSystemId: string }) {

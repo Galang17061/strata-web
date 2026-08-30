@@ -1,5 +1,13 @@
 import { api, queryString, type Envelope } from "@/lib/api/client";
-import type { ListParams, PlotPoint, Project, ProjectSystem, SystemView } from "@/features/projects/types";
+import type {
+  ListParams,
+  PlotPoint,
+  Project,
+  ProjectSystem,
+  SystemTree,
+  SystemTreeInput,
+  SystemView,
+} from "@/features/projects/types";
 
 export function listProjects(params: ListParams = {}): Promise<Envelope<Project[]>> {
   return api.get<Envelope<Project[]>>(`/MasterProject${queryString(params)}`);
@@ -31,6 +39,29 @@ export function highReliabilitySystems(count = 10): Promise<Envelope<ProjectSyst
 
 export function systemsByProject(projectId: string): Promise<Envelope<SystemView[]>> {
   return api.get<Envelope<SystemView[]>>(`/MasterSystem/systemByProject${queryString({ projectId })}`);
+}
+
+export function createSystem(input: {
+  projectId: string;
+  systemName: string;
+  hierarchy: SystemTreeInput[];
+}): Promise<Envelope<{ rbdSystemId: string }>> {
+  return api.post<Envelope<{ rbdSystemId: string }>>("/MasterSystem/createRbdSystem", input);
+}
+
+export function renameSystem(rbdSystemId: string, input: { projectId: string; systemName: string }): Promise<Envelope<SystemTree>> {
+  return api.put<Envelope<SystemTree>>(`/MasterSystem/${encodeURIComponent(rbdSystemId)}`, {
+    ...input,
+    hierarchy: null,
+  });
+}
+
+export function deleteSystem(rbdSystemId: string): Promise<Envelope<null>> {
+  return api.delete<Envelope<null>>(`/MasterSystem/${encodeURIComponent(rbdSystemId)}`);
+}
+
+export function getSystemTree(rbdSystemId: string): Promise<Envelope<SystemTree>> {
+  return api.get<Envelope<SystemTree>>(`/MasterSystem/getRbdTreeView/${encodeURIComponent(rbdSystemId)}`);
 }
 
 export function systemPlot(rbdSystemId: string): Promise<Envelope<PlotPoint[]>> {
