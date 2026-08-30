@@ -10,6 +10,10 @@ export function createMasterComponent(input: MasterComponentInput): Promise<Enve
   return api.post<Envelope<unknown>>("/MasterComponent", input);
 }
 
+export function updateMasterComponent(componentId: string, input: MasterComponentInput): Promise<Envelope<unknown>> {
+  return api.put<Envelope<unknown>>(`/MasterComponent/${encodeURIComponent(componentId)}`, input);
+}
+
 export function listVendors(params: ListParams = {}): Promise<Envelope<Vendor[]>> {
   return api.get<Envelope<Vendor[]>>(`/MasterManufacturer${queryString(params)}`);
 }

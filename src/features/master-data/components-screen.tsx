@@ -16,9 +16,11 @@ import { Input } from "@/components/ui/input";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { PermissionGate } from "@/features/auth/permission-gate";
 import { MODULES } from "@/features/auth/roles";
+import { usePermissions } from "@/features/auth/session";
 import { listMasterComponents } from "@/features/master-data/api";
 import { ComponentDialog } from "@/features/master-data/component-dialog";
 import { ComponentsTable, hideableColumns } from "@/features/master-data/components-table";
+import type { MasterComponent } from "@/features/master-data/types";
 import { MasterDataTabs } from "@/features/master-data/master-data-tabs";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
@@ -36,6 +38,16 @@ export function ComponentsScreen() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [dense, setDense] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<MasterComponent | null>(null);
+  const permissions = usePermissions(MODULES.MASTER_DATA);
+  const openCreate = () => {
+    setEditing(null);
+    setDialogOpen(true);
+  };
+  const openEdit = (component: MasterComponent) => {
+    setEditing(component);
+    setDialogOpen(true);
+  };
   const sort = sorting[0];
 
   const [lastSearch, setLastSearch] = useState(debounced);
@@ -67,7 +79,7 @@ export function ComponentsScreen() {
         description={components.data ? `${formatCount(total)} parts a system can be built from.` : "The catalogue of parts a system can be built from."}
         actions={
           <PermissionGate moduleName={MODULES.MASTER_DATA} permission="create">
-            <Button onClick={() => setDialogOpen(true)}>
+            <Button onClick={openCreate}>
               <Plus /> New component
             </Button>
           </PermissionGate>
@@ -135,6 +147,8 @@ export function ComponentsScreen() {
         columnVisibility={columnVisibility}
         onColumnVisibilityChange={setColumnVisibility}
         dense={dense}
+        canEdit={permissions.canUpdate}
+        onEdit={openEdit}
       />
       {rows.length > 0 || page > 1 ? (
         <TablePagination
@@ -149,7 +163,7 @@ export function ComponentsScreen() {
           noun="parts"
         />
       ) : null}
-      <ComponentDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <ComponentDialog open={dialogOpen} onOpenChange={setDialogOpen} component={editing} />
     </div>
   );
 }

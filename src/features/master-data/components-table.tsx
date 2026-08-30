@@ -9,7 +9,7 @@ import {
   type SortingState,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Pencil } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 import { EmptyState } from "@/components/brand/empty-state";
 import { EmptyBlocksIllustration } from "@/components/brand/illustrations";
@@ -40,6 +40,8 @@ type ComponentsTableProps = {
   columnVisibility: VisibilityState;
   onColumnVisibilityChange: OnChangeFn<VisibilityState>;
   dense?: boolean;
+  canEdit?: boolean;
+  onEdit?: (component: MasterComponent) => void;
 };
 
 export const hideableColumns = [
@@ -59,6 +61,8 @@ export function ComponentsTable({
   columnVisibility,
   onColumnVisibilityChange,
   dense = false,
+  canEdit = false,
+  onEdit,
 }: ComponentsTableProps) {
   const columns = useMemo(
     () => [
@@ -102,8 +106,24 @@ export function ComponentsTable({
           );
         },
       }),
+      columnHelper.display({
+        id: "actions",
+        header: () => <span className="sr-only">Actions</span>,
+        meta: { numeric: true },
+        cell: (info) =>
+          canEdit ? (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={`Edit ${info.row.original.componentName}`}
+              onClick={() => onEdit?.(info.row.original)}
+            >
+              <Pencil />
+            </Button>
+          ) : null,
+      }),
     ],
-    [dense],
+    [dense, canEdit, onEdit],
   );
 
   const table = useReactTable({

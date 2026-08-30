@@ -19,8 +19,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createMasterComponent, listVendors } from "@/features/master-data/api";
-import { CompatibilityPicker } from "@/features/master-data/compatibility-picker";
+import { createMasterComponent, listVendors, updateMasterComponent } from "@/features/master-data/api";
+import { CompatibilityPicker, splitCompatibility } from "@/features/master-data/compatibility-picker";
+import type { MasterComponent } from "@/features/master-data/types";
 import { ApiError } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query-keys";
 
@@ -42,13 +43,27 @@ type FormValues = z.infer<typeof schema>;
 const emptyValues: FormValues = { componentName: "", vendorId: "", serialNumber: "", failureRate: "", cost: "", compatibility: [] };
 const vendorParams = { page: 1, pageSize: 200, sortBy: "manufacturerName", sortOrder: "asc" as const };
 
+function valuesOf(component: MasterComponent | null | undefined): FormValues {
+  if (!component) return emptyValues;
+  return {
+    componentName: component.componentName,
+    vendorId: component.vendorId,
+    serialNumber: component.serialNumber ?? "",
+    failureRate: component.failureRate === null ? "" : String(component.failureRate),
+    cost: component.cost ?? "",
+    compatibility: splitCompatibility(component.compatibility),
+  };
+}
+
 type ComponentDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  component?: MasterComponent | null;
 };
 
-export function ComponentDialog({ open, onOpenChange }: ComponentDialogProps) {
+export function ComponentDialog({ open, onOpenChange, component }: ComponentDialogProps) {
   const queryClient = useQueryClient();
+  const editing = Boolean(component);
   const vendors = useQuery({
     queryKey: queryKeys.vendors.list(vendorParams),
     queryFn: () => listVendors(vendorParams),
@@ -56,27 +71,29 @@ export function ComponentDialog({ open, onOpenChange }: ComponentDialogProps) {
   });
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: emptyValues,
+    defaultValues: valuesOf(component),
     mode: "onBlur",
   });
 
   useEffect(() => {
-    if (open) form.reset(emptyValues);
-  }, [open, form]);
+    if (open) form.reset(valuesOf(component));
+  }, [open, component, form]);
 
   const mutation = useMutation({
-    mutationFn: (values: FormValues) =>
-      createMasterComponent({
+    mutationFn: (values: FormValues) => {
+      const input = {
         componentName: values.componentName,
         vendorId: values.vendorId,
         serialNumber: values.serialNumber || null,
         failureRate: Number(values.failureRate),
         cost: values.cost.replace(/\D/g, "") || null,
         compatibility: values.compatibility.join(",") || null,
-      }),
+      };
+      return component ? updateMasterComponent(component.componentId, input) : createMasterComponent(input);
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.masterComponents.all });
-      toast.success("Component added", { description: form.getValues("componentName") });
+      toast.success(editing ? "Component updated" : "Component added", { description: form.getValues("componentName") });
       onOpenChange(false);
     },
     onError: (error) => {
@@ -98,8 +115,10 @@ export function ComponentDialog({ open, onOpenChange }: ComponentDialogProps) {
       <DialogContent>
         <form onSubmit={form.handleSubmit((values) => mutation.mutate(values))} noValidate className="flex flex-col gap-5">
           <DialogHeader>
-            <DialogTitle>New component</DialogTitle>
-            <DialogDescription>A part in the catalogue that systems can be built from.</DialogDescription>
+            <DialogTitle>{editing ? "Edit component" : "New component"}</DialogTitle>
+            <DialogDescription>
+              {editing ? "Change what the catalogue knows about this part." : "A part in the catalogue that systems can be built from."}
+            </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="component-name">Component name</Label>
@@ -192,7 +211,14 @@ export function ComponentDialog({ open, onOpenChange }: ComponentDialogProps) {
             <Controller
               control={form.control}
               name="compatibility"
-              render={({ field }) => <CompatibilityPicker id="component-compatibility" value={field.value} onChange={field.onChange} />}
+              render={({ field }) => (
+                <CompatibilityPicker
+                  id="component-compatibility"
+                  value={field.value}
+                  onChange={field.onChange}
+                  excludeId={component?.componentId ?? null}
+                />
+              )}
             />
           </div>
           <DialogFooter>
@@ -202,7 +228,7 @@ export function ComponentDialog({ open, onOpenChange }: ComponentDialogProps) {
               </Button>
             </DialogClose>
             <Button type="submit" loading={mutation.isPending}>
-              Add component
+              {editing ? "Save changes" : "Add component"}
             </Button>
           </DialogFooter>
         </form>
