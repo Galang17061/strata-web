@@ -33,7 +33,7 @@ export function CountUp({
   const ref = useRef<HTMLSpanElement | SVGTextElement | SVGTSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-10% 0px" });
   const ready = immediate || inView;
-  const [display, setDisplay] = useState(() => format(reduced ? value : 0));
+  const [display, setDisplay] = useState(() => format(0));
 
   useEffect(() => {
     if (!ready || !active) return;
