@@ -18,6 +18,10 @@ export function updateUser(userId: string, input: UserUpdateInput): Promise<Enve
   return api.put<Envelope<unknown>>(`/User/${encodeURIComponent(userId)}`, input);
 }
 
+export function resetPassword(userId: string, input: { passwordNew: string; reconfirmPassword: string }): Promise<Envelope<unknown>> {
+  return api.put<Envelope<unknown>>(`/User/ChangePasswordAdmin${queryString({ UserId: userId })}`, input);
+}
+
 export function deleteUser(userId: string): Promise<Envelope<null>> {
   return api.delete<Envelope<null>>(`/User/${encodeURIComponent(userId)}`);
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Trash2, UserPlus } from "lucide-react";
+import { KeyRound, Pencil, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/brand/empty-state";
@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { deleteUser, listUsers } from "@/features/account/api";
+import { ResetPasswordDialog } from "@/features/account/reset-password-dialog";
 import { RoleBadge } from "@/features/account/role-badge";
 import type { User } from "@/features/account/types";
 import { UserSheet } from "@/features/account/user-sheet";
@@ -60,6 +61,7 @@ export function AccountScreen() {
   const session = useSession();
   const queryClient = useQueryClient();
   const [removing, setRemoving] = useState<User | null>(null);
+  const [resetting, setResetting] = useState<User | null>(null);
   const remove = useMutation({
     mutationFn: (user: User) => deleteUser(user.id),
     onSuccess: async (_, user) => {
@@ -95,7 +97,7 @@ export function AccountScreen() {
               <TableHead>Username</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead className="w-24 text-right">
+              <TableHead className="w-32 text-right">
                 <span className="sr-only">Actions</span>
               </TableHead>
             </TableRow>
@@ -114,6 +116,11 @@ export function AccountScreen() {
                     <Button variant="ghost" size="icon-sm" aria-label={`Edit ${user.fullName}`} onClick={() => openEdit(user)}>
                       <Pencil />
                     </Button>
+                    {user.id !== session.user?.id ? (
+                      <Button variant="ghost" size="icon-sm" aria-label={`Reset password for ${user.fullName}`} onClick={() => setResetting(user)}>
+                        <KeyRound />
+                      </Button>
+                    ) : null}
                     {user.id !== session.user?.id ? (
                       <Button
                         variant="ghost"
@@ -147,6 +154,12 @@ export function AccountScreen() {
         />
       ) : null}
       <UserSheet open={sheetOpen} onOpenChange={setSheetOpen} user={editing} />
+      <ResetPasswordDialog
+        user={resetting}
+        onOpenChange={(open) => {
+          if (!open) setResetting(null);
+        }}
+      />
       <ConfirmDialog
         open={removing !== null}
         onOpenChange={(open) => {
