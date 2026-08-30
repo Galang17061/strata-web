@@ -127,6 +127,18 @@ export type ComponentUpdateInput = {
   mtbf: number;
 };
 
+export type FailureEvent = {
+  failureEventId: string;
+  systemComponentId: string;
+  failureDate: string;
+  failureNumber: number | null;
+  runningHours: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string | null;
+  updatedBy: string | null;
+};
+
 export type SystemTotal = {
   rbdSystemId: string;
   systemName: string | null;

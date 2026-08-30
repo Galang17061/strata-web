@@ -9,6 +9,7 @@ import type {
   DrawingNodeInput,
   DrawingNodeView,
   DrawingScope,
+  FailureEvent,
   HierarchyCalculation,
   HierarchyCreateInput,
   HierarchyUpdateInput,
@@ -82,6 +83,13 @@ export function updateComponent(systemComponentId: string, input: ComponentUpdat
 
 export function deleteComponent(systemComponentId: string): Promise<Envelope<unknown>> {
   return api.delete<Envelope<unknown>>(`/SystemComponentProperties/${encodeURIComponent(systemComponentId)}`);
+}
+
+export function listFailureEvents(
+  systemComponentId: string,
+  params: { page: number; pageSize: number },
+): Promise<Envelope<FailureEvent[]>> {
+  return api.get<Envelope<FailureEvent[]>>(`/ReliabilityEditor/failureEvent${queryString({ systemComponentId, ...params })}`);
 }
 
 export function systemTotal(rbdSystemId: string): Promise<Envelope<SystemTotal>> {
