@@ -1,9 +1,13 @@
 import { api, queryString, type Envelope } from "@/lib/api/client";
-import type { MasterComponent, Vendor, VendorInput } from "@/features/master-data/types";
+import type { MasterComponent, MasterComponentInput, Vendor, VendorInput } from "@/features/master-data/types";
 import type { ListParams } from "@/features/projects/types";
 
 export function listMasterComponents(params: ListParams = {}): Promise<Envelope<MasterComponent[]>> {
   return api.get<Envelope<MasterComponent[]>>(`/MasterComponent${queryString(params)}`);
+}
+
+export function createMasterComponent(input: MasterComponentInput): Promise<Envelope<unknown>> {
+  return api.post<Envelope<unknown>>("/MasterComponent", input);
 }
 
 export function listVendors(params: ListParams = {}): Promise<Envelope<Vendor[]>> {

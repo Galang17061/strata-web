@@ -15,6 +15,15 @@ export type VendorInput = {
   logo?: File | null;
 };
 
+export type MasterComponentInput = {
+  componentName: string;
+  vendorId: string;
+  serialNumber: string | null;
+  failureRate: number;
+  cost: string | null;
+  compatibility: string | null;
+};
+
 export type MasterComponent = {
   componentId: string;
   componentName: string;

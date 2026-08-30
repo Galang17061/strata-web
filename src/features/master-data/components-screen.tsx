@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
-import { Columns3, Rows2, Rows3, Search } from "lucide-react";
+import { Columns3, Plus, Rows2, Rows3, Search } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +14,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { PermissionGate } from "@/features/auth/permission-gate";
+import { MODULES } from "@/features/auth/roles";
 import { listMasterComponents } from "@/features/master-data/api";
+import { ComponentDialog } from "@/features/master-data/component-dialog";
 import { ComponentsTable, hideableColumns } from "@/features/master-data/components-table";
 import { MasterDataTabs } from "@/features/master-data/master-data-tabs";
 import { PageHeader } from "@/features/shell/page-header";
@@ -32,6 +35,7 @@ export function ComponentsScreen() {
   const [sorting, setSortingState] = useState<SortingState>([{ id: "componentName", desc: false }]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [dense, setDense] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const sort = sorting[0];
 
   const [lastSearch, setLastSearch] = useState(debounced);
@@ -61,6 +65,13 @@ export function ComponentsScreen() {
       <PageHeader
         title="Components"
         description={components.data ? `${formatCount(total)} parts a system can be built from.` : "The catalogue of parts a system can be built from."}
+        actions={
+          <PermissionGate moduleName={MODULES.MASTER_DATA} permission="create">
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus /> New component
+            </Button>
+          </PermissionGate>
+        }
       />
       <MasterDataTabs />
       <div className="flex flex-wrap items-center gap-3">
@@ -138,6 +149,7 @@ export function ComponentsScreen() {
           noun="parts"
         />
       ) : null}
+      <ComponentDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );
 }
