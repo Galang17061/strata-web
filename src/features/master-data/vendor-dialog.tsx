@@ -18,9 +18,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createVendor } from "@/features/master-data/api";
+import { createVendor, updateVendor } from "@/features/master-data/api";
 import { LogoDropZone } from "@/features/master-data/logo-drop-zone";
+import type { Vendor } from "@/features/master-data/types";
 import { ApiError } from "@/lib/api/client";
+import { filesUrl } from "@/lib/files-url";
 import { queryKeys } from "@/lib/query-keys";
 
 const schema = z.object({
@@ -30,35 +32,42 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-const emptyValues: FormValues = { manufacturerName: "", validUntil: "" };
+function valuesOf(vendor: Vendor | null | undefined): FormValues {
+  return {
+    manufacturerName: vendor?.manufacturerName ?? "",
+    validUntil: vendor?.validUntil ? vendor.validUntil.slice(0, 10) : "",
+  };
+}
 
 type VendorDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  vendor?: Vendor | null;
 };
 
-export function VendorDialog({ open, onOpenChange }: VendorDialogProps) {
+export function VendorDialog({ open, onOpenChange, vendor }: VendorDialogProps) {
   const queryClient = useQueryClient();
+  const editing = Boolean(vendor);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: emptyValues,
+    defaultValues: valuesOf(vendor),
     mode: "onBlur",
   });
-
   const [logo, setLogo] = useState<File | null>(null);
 
   useEffect(() => {
     if (open) {
-      form.reset(emptyValues);
+      form.reset(valuesOf(vendor));
       setLogo(null);
     }
-  }, [open, form]);
+  }, [open, vendor, form]);
 
   const mutation = useMutation({
-    mutationFn: (values: FormValues) => createVendor({ ...values, logo }),
+    mutationFn: (values: FormValues) =>
+      vendor ? updateVendor(vendor.vendorId, { ...values, logo }) : createVendor({ ...values, logo }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all });
-      toast.success("Vendor added", { description: form.getValues("manufacturerName") });
+      toast.success(editing ? "Vendor updated" : "Vendor added", { description: form.getValues("manufacturerName") });
       onOpenChange(false);
     },
     onError: (error) => {
@@ -77,8 +86,10 @@ export function VendorDialog({ open, onOpenChange }: VendorDialogProps) {
       <DialogContent>
         <form onSubmit={form.handleSubmit((values) => mutation.mutate(values))} noValidate className="flex flex-col gap-5">
           <DialogHeader>
-            <DialogTitle>New vendor</DialogTitle>
-            <DialogDescription>A vendor is the maker a part in the catalogue comes from.</DialogDescription>
+            <DialogTitle>{editing ? "Edit vendor" : "New vendor"}</DialogTitle>
+            <DialogDescription>
+              {editing ? "Change what is known about this maker." : "A vendor is the maker a part in the catalogue comes from."}
+            </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="vendor-name">Vendor name</Label>
@@ -101,7 +112,7 @@ export function VendorDialog({ open, onOpenChange }: VendorDialogProps) {
             <Input id="vendor-valid-until" type="date" className="font-mono tabular-nums sm:max-w-48" {...form.register("validUntil")} />
             <p className="text-caption text-foreground-muted normal-case">Leave it empty if the agreement has no end date.</p>
           </div>
-          <LogoDropZone file={logo} onFileChange={setLogo} />
+          <LogoDropZone file={logo} onFileChange={setLogo} currentUrl={filesUrl(vendor?.logoImage)} />
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="secondary">
@@ -109,7 +120,7 @@ export function VendorDialog({ open, onOpenChange }: VendorDialogProps) {
               </Button>
             </DialogClose>
             <Button type="submit" loading={mutation.isPending}>
-              Add vendor
+              {editing ? "Save changes" : "Add vendor"}
             </Button>
           </DialogFooter>
         </form>

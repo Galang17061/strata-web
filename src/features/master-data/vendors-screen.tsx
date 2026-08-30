@@ -5,13 +5,14 @@ import Image from "next/image";
 import { useState } from "react";
 import { EmptyState } from "@/components/brand/empty-state";
 import { LayersIllustration } from "@/components/brand/illustrations";
-import { Plus } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { Stagger, StaggerItem } from "@/components/motion/reveal";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PermissionGate } from "@/features/auth/permission-gate";
 import { MODULES } from "@/features/auth/roles";
+import { usePermissions } from "@/features/auth/session";
 import { listVendors } from "@/features/master-data/api";
 import type { Vendor } from "@/features/master-data/types";
 import { VendorDialog } from "@/features/master-data/vendor-dialog";
@@ -74,10 +75,29 @@ function VendorLogo({ vendor }: { vendor: Vendor }) {
   );
 }
 
-function VendorCard({ vendor }: { vendor: Vendor }) {
+type VendorCardProps = {
+  vendor: Vendor;
+  canEdit: boolean;
+  onEdit: () => void;
+};
+
+function VendorCard({ vendor, canEdit, onEdit }: VendorCardProps) {
   return (
-    <Card className="h-full gap-4 transition-colors hover:border-border-strong">
-      <VendorLogo vendor={vendor} />
+    <Card className="group h-full gap-4 transition-colors hover:border-border-strong">
+      <div className="flex items-start justify-between gap-3">
+        <VendorLogo vendor={vendor} />
+        {canEdit ? (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Edit ${vendor.manufacturerName}`}
+            onClick={onEdit}
+            className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+          >
+            <Pencil />
+          </Button>
+        ) : null}
+      </div>
       <div className="min-w-0">
         <CardTitle className="truncate">{vendor.manufacturerName}</CardTitle>
         <CardDescription>
@@ -95,11 +115,22 @@ export function VendorsScreen() {
     queryFn: () => listVendors(listParams),
   });
   const rows = vendors.data?.data ?? [];
+  const permissions = usePermissions(MODULES.MASTER_DATA);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<Vendor | null>(null);
+
+  const openCreate = () => {
+    setEditing(null);
+    setDialogOpen(true);
+  };
+  const openEdit = (vendor: Vendor) => {
+    setEditing(vendor);
+    setDialogOpen(true);
+  };
 
   const newVendorButton = (
     <PermissionGate moduleName={MODULES.MASTER_DATA} permission="create">
-      <Button onClick={() => setDialogOpen(true)}>
+      <Button onClick={openCreate}>
         <Plus /> New vendor
       </Button>
     </PermissionGate>
@@ -126,12 +157,12 @@ export function VendorsScreen() {
         <Stagger inView={false} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {rows.map((vendor) => (
             <StaggerItem key={vendor.vendorId}>
-              <VendorCard vendor={vendor} />
+              <VendorCard vendor={vendor} canEdit={permissions.canUpdate} onEdit={() => openEdit(vendor)} />
             </StaggerItem>
           ))}
         </Stagger>
       )}
-      <VendorDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <VendorDialog open={dialogOpen} onOpenChange={setDialogOpen} vendor={editing} />
     </div>
   );
 }

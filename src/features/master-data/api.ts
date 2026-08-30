@@ -21,3 +21,7 @@ function vendorForm(input: VendorInput): FormData {
 export function createVendor(input: VendorInput): Promise<Envelope<unknown>> {
   return api.post<Envelope<unknown>>("/MasterManufacturer", vendorForm(input));
 }
+
+export function updateVendor(vendorId: string, input: VendorInput): Promise<Envelope<unknown>> {
+  return api.put<Envelope<unknown>>(`/MasterManufacturer/${encodeURIComponent(vendorId)}`, vendorForm(input));
+}
