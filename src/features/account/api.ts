@@ -1,5 +1,5 @@
-import { api, queryString, type Envelope } from "@/lib/api/client";
-import type { Role, User, UserInput, UserUpdateInput } from "@/features/account/types";
+import { ApiError, api, queryString, type Envelope } from "@/lib/api/client";
+import type { Role, User, UserAccessEntry, UserInput, UserUpdateInput } from "@/features/account/types";
 
 export type PageParams = {
   page?: number;
@@ -20,6 +20,16 @@ export function updateUser(userId: string, input: UserUpdateInput): Promise<Enve
 
 export function resetPassword(userId: string, input: { passwordNew: string; reconfirmPassword: string }): Promise<Envelope<unknown>> {
   return api.put<Envelope<unknown>>(`/User/ChangePasswordAdmin${queryString({ UserId: userId })}`, input);
+}
+
+export async function accessOfUser(userId: string): Promise<UserAccessEntry[]> {
+  try {
+    const response = await api.get<Envelope<UserAccessEntry[]>>(`/UserAccess/${encodeURIComponent(userId)}`);
+    return response.data ?? [];
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return [];
+    throw error;
+  }
 }
 
 export function deleteUser(userId: string): Promise<Envelope<null>> {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { KeyRound, Pencil, Trash2, UserPlus } from "lucide-react";
+import { KeyRound, Pencil, ShieldCheck, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/brand/empty-state";
@@ -11,6 +11,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { AccessSheet } from "@/features/account/access-sheet";
 import { deleteUser, listUsers } from "@/features/account/api";
 import { ResetPasswordDialog } from "@/features/account/reset-password-dialog";
 import { RoleBadge } from "@/features/account/role-badge";
@@ -63,6 +64,7 @@ export function AccountScreen() {
   const queryClient = useQueryClient();
   const [removing, setRemoving] = useState<User | null>(null);
   const [resetting, setResetting] = useState<User | null>(null);
+  const [accessFor, setAccessFor] = useState<User | null>(null);
   const remove = useMutation({
     mutationFn: (user: User) => deleteUser(user.id),
     onSuccess: async (_, user) => {
@@ -98,7 +100,7 @@ export function AccountScreen() {
               <TableHead>Username</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead className="w-32 text-right">
+              <TableHead className="w-40 text-right">
                 <span className="sr-only">Actions</span>
               </TableHead>
             </TableRow>
@@ -114,6 +116,9 @@ export function AccountScreen() {
                 </TableCell>
                 <TableCell className="text-right">
                   <span className="inline-flex items-center gap-1">
+                    <Button variant="ghost" size="icon-sm" aria-label={`Access for ${user.fullName}`} onClick={() => setAccessFor(user)}>
+                      <ShieldCheck />
+                    </Button>
                     <Button variant="ghost" size="icon-sm" aria-label={`Edit ${user.fullName}`} onClick={() => openEdit(user)}>
                       <Pencil />
                     </Button>
@@ -156,6 +161,12 @@ export function AccountScreen() {
       ) : null}
       <RolesCard />
       <UserSheet open={sheetOpen} onOpenChange={setSheetOpen} user={editing} />
+      <AccessSheet
+        user={accessFor}
+        onOpenChange={(open) => {
+          if (!open) setAccessFor(null);
+        }}
+      />
       <ResetPasswordDialog
         user={resetting}
         onOpenChange={(open) => {

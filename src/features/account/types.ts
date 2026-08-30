@@ -21,6 +21,17 @@ export type UserInput = {
   roleId: string;
 };
 
+export type UserAccessEntry = {
+  id?: string;
+  userId: string;
+  modul: string;
+  is_add: boolean;
+  is_edit: boolean;
+  is_delete: boolean;
+  is_view: boolean;
+  is_download: boolean;
+};
+
 export type UserUpdateInput = {
   fullname: string;
   userName: string;
