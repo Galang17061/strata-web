@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -70,10 +70,17 @@ export function AccessSheet({ user, onOpenChange }: AccessSheetProps) {
     enabled: open,
   });
   const [rows, setRows] = useState<UserAccessEntry[]>([]);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user && saved.data) setRows(matrixFor(user, saved.data));
   }, [user, saved.data]);
+
+  useEffect(() => {
+    if (rows.length === 0) return;
+    const first = gridRef.current?.querySelector<HTMLButtonElement>("[role=switch]");
+    first?.focus();
+  }, [rows.length]);
 
   const toggle = (moduleName: string, key: RightKey, value: boolean) => {
     setRows((current) => current.map((row) => (row.modul === moduleName ? { ...row, [key]: value } : row)));
@@ -108,7 +115,7 @@ export function AccessSheet({ user, onOpenChange }: AccessSheetProps) {
               ))}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div ref={gridRef} className="overflow-x-auto">
               <table className="w-full text-body-sm">
                 <caption className="sr-only">Rights per module</caption>
                 <thead>
