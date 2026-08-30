@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createMasterComponent, listVendors } from "@/features/master-data/api";
+import { CompatibilityPicker } from "@/features/master-data/compatibility-picker";
 import { ApiError } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query-keys";
 
@@ -33,11 +34,12 @@ const schema = z.object({
     .min(1, "Enter how often it fails per running hour.")
     .refine((value) => Number.isFinite(Number(value)) && Number(value) >= 0, "Use a number of zero or more."),
   cost: z.string().trim().regex(/^[\d,.\s]*$/, "Use digits only."),
+  compatibility: z.array(z.string()),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-const emptyValues: FormValues = { componentName: "", vendorId: "", serialNumber: "", failureRate: "", cost: "" };
+const emptyValues: FormValues = { componentName: "", vendorId: "", serialNumber: "", failureRate: "", cost: "", compatibility: [] };
 const vendorParams = { page: 1, pageSize: 200, sortBy: "manufacturerName", sortOrder: "asc" as const };
 
 type ComponentDialogProps = {
@@ -70,7 +72,7 @@ export function ComponentDialog({ open, onOpenChange }: ComponentDialogProps) {
         serialNumber: values.serialNumber || null,
         failureRate: Number(values.failureRate),
         cost: values.cost.replace(/\D/g, "") || null,
-        compatibility: null,
+        compatibility: values.compatibility.join(",") || null,
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.masterComponents.all });
@@ -184,6 +186,14 @@ export function ComponentDialog({ open, onOpenChange }: ComponentDialogProps) {
                 {errors.cost ? errors.cost.message : "Whole units, optional."}
               </p>
             </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="component-compatibility">Compatible with</Label>
+            <Controller
+              control={form.control}
+              name="compatibility"
+              render={({ field }) => <CompatibilityPicker id="component-compatibility" value={field.value} onChange={field.onChange} />}
+            />
           </div>
           <DialogFooter>
             <DialogClose asChild>

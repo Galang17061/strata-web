@@ -13,11 +13,13 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 import { EmptyState } from "@/components/brand/empty-state";
 import { EmptyBlocksIllustration } from "@/components/brand/illustrations";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { splitCompatibility } from "@/features/master-data/compatibility-picker";
 import type { MasterComponent } from "@/features/master-data/types";
-import { formatFailureRate, formatMoney } from "@/lib/format";
+import { formatCount, formatFailureRate, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const columnHelper = createColumnHelper<MasterComponent>();
@@ -44,6 +46,7 @@ export const hideableColumns = [
   { id: "manufacturerName", label: "Vendor" },
   { id: "failureRate", label: "Failure rate" },
   { id: "cost", label: "Cost" },
+  { id: "compatibility", label: "Compatible with" },
 ];
 
 export function ComponentsTable({
@@ -84,6 +87,20 @@ export function ComponentsTable({
         meta: { numeric: true },
         enableSorting: false,
         cell: (info) => formatMoney(info.getValue()),
+      }),
+      columnHelper.accessor("compatibility", {
+        header: "Compatible with",
+        enableSorting: false,
+        cell: (info) => {
+          const count = splitCompatibility(info.getValue()).length;
+          return count === 0 ? (
+            <span className="text-foreground-subtle">None listed</span>
+          ) : (
+            <Badge variant="secondary">
+              {formatCount(count)} {count === 1 ? "part" : "parts"}
+            </Badge>
+          );
+        },
       }),
     ],
     [dense],
