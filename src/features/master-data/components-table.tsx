@@ -9,7 +9,7 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { EmptyState } from "@/components/brand/empty-state";
 import { EmptyBlocksIllustration } from "@/components/brand/illustrations";
 import { Button } from "@/components/ui/button";
@@ -32,9 +32,11 @@ type ComponentsTableProps = {
   loading?: boolean;
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
+  searching?: boolean;
+  emptyAction?: ReactNode;
 };
 
-export function ComponentsTable({ rows, loading = false, sorting, onSortingChange }: ComponentsTableProps) {
+export function ComponentsTable({ rows, loading = false, sorting, onSortingChange, searching = false, emptyAction }: ComponentsTableProps) {
   const columns = useMemo(
     () => [
       columnHelper.accessor("componentName", {
@@ -98,8 +100,9 @@ export function ComponentsTable({ rows, loading = false, sorting, onSortingChang
         <EmptyState
           compact
           illustration={<EmptyBlocksIllustration />}
-          title="No components yet"
-          description="Add a part to the catalogue so systems have something to be built from."
+          title={searching ? "Nothing matches that" : "No components yet"}
+          description={searching ? "Try another word, or clear the search." : "Add a part to the catalogue so systems have something to be built from."}
+          action={emptyAction}
         />
       </div>
     );
