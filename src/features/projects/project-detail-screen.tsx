@@ -183,6 +183,7 @@ export function ProjectDetailScreen() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         projectId={projectId}
+        maxDepth={project.data?.data?.hierarchyDepth ?? 3}
         onCreated={(rbdSystemId) => router.push(workspaceHref(projectId, rbdSystemId))}
       />
       <ConfirmDialog

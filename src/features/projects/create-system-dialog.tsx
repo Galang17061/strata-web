@@ -193,17 +193,19 @@ function ComponentRow({ component, onChange, onRemove }: { component: BuilderCom
 function NodeEditor({
   node,
   depth,
+  maxDepth,
   catalogue,
   onChange,
   onRemove,
 }: {
   node: BuilderNode;
   depth: number;
+  maxDepth: number;
   catalogue: MasterComponent[];
   onChange: (next: BuilderNode) => void;
   onRemove: () => void;
 }) {
-  const canNest = depth < 3 && node.components.length === 0;
+  const canNest = depth < maxDepth && node.components.length === 0;
   const canHoldComponents = node.children.length === 0;
   return (
     <div className={cn("flex flex-col gap-3 rounded-md border border-border bg-surface p-3", depth > 1 && "ml-4")}>
@@ -240,6 +242,7 @@ function NodeEditor({
               key={child.id}
               node={child}
               depth={depth + 1}
+              maxDepth={maxDepth}
               catalogue={catalogue}
               onChange={(next) => onChange({ ...node, children: node.children.map((item) => (item.id === next.id ? next : item)) })}
               onRemove={() => onChange({ ...node, children: node.children.filter((item) => item.id !== child.id) })}
@@ -284,10 +287,11 @@ type CreateSystemDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string;
+  maxDepth: number;
   onCreated?: (rbdSystemId: string) => void;
 };
 
-export function CreateSystemDialog({ open, onOpenChange, projectId, onCreated }: CreateSystemDialogProps) {
+export function CreateSystemDialog({ open, onOpenChange, projectId, maxDepth, onCreated }: CreateSystemDialogProps) {
   const queryClient = useQueryClient();
   const [systemName, setSystemName] = useState("");
   const [nodes, setNodes] = useState<BuilderNode[]>([]);
@@ -346,6 +350,7 @@ export function CreateSystemDialog({ open, onOpenChange, projectId, onCreated }:
                 key={node.id}
                 node={node}
                 depth={1}
+                maxDepth={maxDepth}
                 catalogue={components}
                 onChange={(next) => setNodes((current) => updateNode(current, next.id, () => next))}
                 onRemove={() => setNodes((current) => removeNode(current, node.id))}
