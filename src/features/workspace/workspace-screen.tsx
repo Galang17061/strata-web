@@ -59,6 +59,24 @@ import { cn } from "@/lib/utils";
 
 const emptyNodes: CanvasNode[] = [];
 
+const panelWidthKeys = { tree: "strata.workspace.tree-width", details: "strata.workspace.details-width" } as const;
+
+function storedPanelWidth(key: string, min: number, max: number): number | null {
+  try {
+    const raw = window.localStorage.getItem(key);
+    const value = raw === null ? NaN : Number(raw);
+    return Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : null;
+  } catch {
+    return null;
+  }
+}
+
+function rememberPanelWidth(key: string, value: number) {
+  try {
+    window.localStorage.setItem(key, String(value));
+  } catch {}
+}
+
 const fourDecimals = (value: number) => formatReliability(value, 4);
 
 function SystemTotalChip({ value }: { value: number | null }) {
@@ -112,6 +130,21 @@ export function WorkspaceScreen() {
   const [treeWidth, setTreeWidth] = useState(280);
   const [detailsWidth, setDetailsWidth] = useState(340);
   const canvasState = useRef<{ nodes: CanvasNode[]; edges: CanvasEdge[] }>({ nodes: [], edges: [] });
+
+  useEffect(() => {
+    const tree = storedPanelWidth(panelWidthKeys.tree, 220, 460);
+    const details = storedPanelWidth(panelWidthKeys.details, 280, 560);
+    if (tree !== null) setTreeWidth(tree);
+    if (details !== null) setDetailsWidth(details);
+  }, []);
+
+  useEffect(() => {
+    rememberPanelWidth(panelWidthKeys.tree, treeWidth);
+  }, [treeWidth]);
+
+  useEffect(() => {
+    rememberPanelWidth(panelWidthKeys.details, detailsWidth);
+  }, [detailsWidth]);
 
   const startPanelDrag = (side: "tree" | "details") => (event: React.PointerEvent) => {
     event.preventDefault();
