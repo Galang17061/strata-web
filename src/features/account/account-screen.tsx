@@ -1,14 +1,17 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { UserPlus } from "lucide-react";
 import { useState } from "react";
 import { EmptyState } from "@/components/brand/empty-state";
 import { EmptyBlocksIllustration } from "@/components/brand/illustrations";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { listUsers } from "@/features/account/api";
 import { RoleBadge } from "@/features/account/role-badge";
+import { UserSheet } from "@/features/account/user-sheet";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
 import { countOf } from "@/lib/format";
@@ -40,12 +43,18 @@ export function AccountScreen() {
   });
   const rows = users.data?.data ?? [];
   const meta = users.data?.meta ?? null;
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Account management"
-        description={users.data ? `${countOf(meta?.totalData ?? rows.length, "person")} can sign in.` : "Who can sign in, and what each of them may do."}
+        description={users.data ? `${countOf(meta?.totalData ?? rows.length, "person", "people")} can sign in.` : "Who can sign in, and what each of them may do."}
+        actions={
+          <Button onClick={() => setSheetOpen(true)}>
+            <UserPlus /> New person
+          </Button>
+        }
       />
       {users.isPending ? (
         <UsersSkeleton />
@@ -91,6 +100,7 @@ export function AccountScreen() {
           plural="people"
         />
       ) : null}
+      <UserSheet open={sheetOpen} onOpenChange={setSheetOpen} />
     </div>
   );
 }
