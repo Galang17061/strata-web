@@ -24,7 +24,7 @@ import { ProjectDialog } from "@/features/projects/project-dialog";
 import type { SystemView } from "@/features/projects/types";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
-import { formatDate } from "@/lib/format";
+import { countOf, formatDate } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
 
 export function ProjectDetailScreen() {
@@ -91,7 +91,11 @@ export function ProjectDetailScreen() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title={name || "Project"}
-        description={project.data?.data ? `Created ${formatDate(project.data.data.createdAt)}` : undefined}
+        description={
+          project.data?.data
+            ? `Created ${formatDate(project.data.data.createdAt)} · systems nest ${countOf(project.data.data.hierarchyDepth, "level", "levels")} deep`
+            : undefined
+        }
         actions={
           <>
             <PermissionGate moduleName={MODULES.DESIGN_FOR_RELIABILITY} permission="update">
