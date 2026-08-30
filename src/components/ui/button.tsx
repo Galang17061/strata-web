@@ -5,7 +5,8 @@ import { Slot } from "radix-ui";
 import { StrataLoader } from "@/components/brand/loader";
 import { cn } from "@/lib/utils";
 
-const touchSlop = "pointer-coarse:relative pointer-coarse:after:absolute pointer-coarse:after:-inset-1.5 pointer-coarse:after:content-['']";
+const touchSlop =
+  "pointer-coarse:[&:not(.absolute)]:relative pointer-coarse:after:absolute pointer-coarse:after:-inset-1.5 pointer-coarse:after:content-['']";
 
 const buttonVariants = cva(
   "group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-sm border border-transparent text-body-sm font-semibold whitespace-nowrap transition-[background-color,color,border-color,box-shadow,transform] outline-none select-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-danger [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
