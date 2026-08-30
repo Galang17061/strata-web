@@ -42,8 +42,8 @@ export function previewLayout(nodes: DrawingNodeView[], edges: DrawingEdgeView[]
     const id = node.idNode ?? node.hierarchyId ?? node.systemComponentId;
     if (!id) continue;
     const virtual = node.connectionType === "virtual";
-    const parsedX = Number(node.positionX);
-    const parsedY = Number(node.positionY);
+    const parsedX = node.positionX === null || node.positionX.trim() === "" ? NaN : Number(node.positionX);
+    const parsedY = node.positionY === null || node.positionY.trim() === "" ? NaN : Number(node.positionY);
     const x = Number.isFinite(parsedX) ? parsedX : fallback * (blockWidth + 60);
     const y = Number.isFinite(parsedY) ? parsedY : 0;
     fallback += 1;
