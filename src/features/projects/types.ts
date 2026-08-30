@@ -90,6 +90,7 @@ export type SystemTree = {
   rbdSystemId: string;
   projectId: string;
   projectName: string;
+  hierarchyDepth: number;
   systemName: string;
   hierarchy: TreeNode[] | null;
 };

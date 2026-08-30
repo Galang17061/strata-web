@@ -33,7 +33,7 @@ type TreePanelProps = {
   onAction: (action: TreeAction) => void;
 };
 
-function RowActions({ node, canEdit, onAction }: { node: TreeNode; canEdit: boolean; onAction: (action: TreeAction) => void }) {
+function RowActions({ node, maxLevel, canEdit, onAction }: { node: TreeNode; maxLevel: number; canEdit: boolean; onAction: (action: TreeAction) => void }) {
   if (!canEdit) return null;
   const hasChildren = (node.hierarchy ?? []).length > 0;
   const hasComponents = (node.components ?? []).length > 0;
@@ -51,7 +51,7 @@ function RowActions({ node, canEdit, onAction }: { node: TreeNode; canEdit: bool
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-52">
-        {node.level < 3 && !hasComponents ? (
+        {node.level < maxLevel && !hasComponents ? (
           <DropdownMenuItem onSelect={() => onAction({ type: "add-subsystem", parent: node })}>
             <Plus /> Add subsystem inside
           </DropdownMenuItem>
@@ -121,6 +121,7 @@ function ComponentRow({
 function HierarchyRow({
   node,
   depth,
+  maxLevel,
   level,
   values,
   selectedCode,
@@ -131,6 +132,7 @@ function HierarchyRow({
 }: {
   node: TreeNode;
   depth: number;
+  maxLevel: number;
   level: Level;
   values: Record<string, number> | null;
   selectedCode: string | null;
@@ -180,7 +182,7 @@ function HierarchyRow({
             <ReliabilityBadge value={value} size="sm" showLabel={false} className="ml-auto" />
           )}
         </button>
-        <RowActions node={node} canEdit={canEdit} onAction={onAction} />
+        <RowActions node={node} maxLevel={maxLevel} canEdit={canEdit} onAction={onAction} />
       </div>
       {open ? (
         <div>
@@ -189,6 +191,7 @@ function HierarchyRow({
               key={child.hierarchyId}
               node={child}
               depth={depth + 1}
+              maxLevel={maxLevel}
               level={level}
               values={values}
               selectedCode={selectedCode}
@@ -247,6 +250,7 @@ export function TreePanel({ tree, level, values, selectedCode, canEdit, onOpenLe
             key={node.hierarchyId}
             node={node}
             depth={1}
+            maxLevel={tree.hierarchyDepth}
             level={level}
             values={values}
             selectedCode={selectedCode}

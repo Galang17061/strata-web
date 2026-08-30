@@ -6,6 +6,7 @@ const tree: SystemTree = {
   rbdSystemId: "00000001",
   projectId: "PJ-00001",
   projectName: "Plant A",
+  hierarchyDepth: 3,
   systemName: "Cooling loop",
   hierarchy: [
     {
