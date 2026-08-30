@@ -299,6 +299,13 @@ html.theme-fading * {
   overflow: hidden;
 }
 
+@media (pointer: coarse) {
+  .react-flow .react-flow__controls-button {
+    width: 40px;
+    height: 40px;
+  }
+}
+
 .react-flow .react-flow__attribution {
   color: var(--foreground-subtle);
   font-size: 0.625rem;
