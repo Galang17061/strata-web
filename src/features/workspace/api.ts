@@ -136,6 +136,10 @@ export function listHistory(hierarchyId: string, params: { page: number; pageSiz
   );
 }
 
+export function deleteHistory(historyId: string): Promise<Envelope<null>> {
+  return api.delete<Envelope<null>>(`/ReliabilityTotal/reliability-history/${encodeURIComponent(historyId)}`);
+}
+
 export function updateRunningHours(rbdSystemId: string, runningHours: number): Promise<Envelope<null>> {
   return api.put<Envelope<null>>(`/ReliabilityTotal/update-running-hours${queryString({ rbdSystemId, runningHours })}`, undefined, {
     silent: true,

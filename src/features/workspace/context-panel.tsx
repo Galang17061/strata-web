@@ -262,7 +262,7 @@ export function ContextPanel({ level, summary, selected, parameters, canEdit, on
           Full value: {formatReliability(summary.value, 8)}
         </p>
         {level.scope === "hierarchy" && parameters.length > 0 ? <InputParameters parameters={parameters} onPickCode={onPickCode} /> : null}
-        {level.scope === "hierarchy" ? <HistoryTimeline hierarchyId={level.id} /> : null}
+        {level.scope === "hierarchy" ? <HistoryTimeline hierarchyId={level.id} canDelete={canEdit} /> : null}
       </div>
       <FormulaDialog level={level} formula={summary.formula ?? ""} open={formulaOpen} onOpenChange={setFormulaOpen} />
     </div>
