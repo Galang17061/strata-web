@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, LayoutGrid, List, Pencil, Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -91,6 +92,7 @@ function ProjectCard({ project, stats, onEdit, canEdit }: { project: Project; st
 
 export function ProjectsScreen() {
   useBreadcrumbs([{ label: "Projects" }]);
+  const router = useRouter();
   const permissions = usePermissions(MODULES.DESIGN_FOR_RELIABILITY);
   const [search, setSearch] = useState("");
   const debounced = useDebounce(search.trim(), 300);
@@ -275,7 +277,14 @@ export function ProjectsScreen() {
         </Table>
       )}
 
-      <ProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} project={editing} />
+      <ProjectDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        project={editing}
+        onSaved={(saved) => {
+          if (!editing && saved) router.push(projectHref(saved.projectId));
+        }}
+      />
     </div>
   );
 }
