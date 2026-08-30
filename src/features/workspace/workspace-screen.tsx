@@ -33,6 +33,7 @@ import {
   systemTotal,
 } from "@/features/workspace/api";
 import { RbdCanvas } from "@/features/workspace/canvas/canvas";
+import { ComponentSheet } from "@/features/workspace/component-sheet";
 import { ContextPanel } from "@/features/workspace/context-panel";
 import { AddComponentDialog, HierarchyDialog } from "@/features/workspace/dialogs";
 import {
@@ -66,6 +67,9 @@ export function WorkspaceScreen() {
   const setLevel = useWorkspaceStore((state) => state.setLevel);
   const selectedCode = useWorkspaceStore((state) => state.selectedCode);
   const setSelectedCode = useWorkspaceStore((state) => state.setSelectedCode);
+  const sheetCode = useWorkspaceStore((state) => state.sheetCode);
+  const openSheet = useWorkspaceStore((state) => state.openSheet);
+  const closeSheet = useWorkspaceStore((state) => state.closeSheet);
   const dirty = useWorkspaceStore((state) => state.dirty);
   const setDirty = useWorkspaceStore((state) => state.setDirty);
   const treeOpen = useWorkspaceStore((state) => state.treeOpen);
@@ -223,6 +227,13 @@ export function WorkspaceScreen() {
   );
 
   const selectedNode = canvas?.nodes.find((node) => node.data.code === selectedCode) ?? null;
+  const sheetNode = canvas?.nodes.find((node) => node.data.code === sheetCode) ?? null;
+  const openComponent = useCallback(
+    (node: CanvasNode) => {
+      if (node.data.kind === "component") openSheet(node.data.code);
+    },
+    [openSheet],
+  );
   const summary = {
     name: content?.name ?? "",
     depth: content?.level ?? 0,
@@ -296,6 +307,7 @@ export function WorkspaceScreen() {
       parameters={parameters.data?.data ?? []}
       canEdit={permissions.canUpdate}
       onOpenLayer={openLayer}
+      onOpenComponent={openComponent}
     />
   );
 
@@ -350,11 +362,12 @@ export function WorkspaceScreen() {
                 onDirty={setDirty}
                 onSelect={setSelectedCode}
                 onOpenLayer={openLayer}
+                onOpenComponent={openComponent}
                 onStateChange={onStateChange}
               />
             )
           ) : (
-            <RbdCanvas key="loading" nodes={emptyNodes} edges={emptyEdges} editable={false} onDirty={() => undefined} onSelect={() => undefined} onOpenLayer={() => undefined} onStateChange={onStateChange} />
+            <RbdCanvas key="loading" nodes={emptyNodes} edges={emptyEdges} editable={false} onDirty={() => undefined} onSelect={() => undefined} onOpenLayer={() => undefined} onOpenComponent={() => undefined} onStateChange={onStateChange} />
           )}
         </section>
         <aside className="hidden min-h-0 border-l border-border bg-surface lg:block">{details}</aside>
@@ -375,6 +388,13 @@ export function WorkspaceScreen() {
         </SheetContent>
       </Sheet>
 
+      <ComponentSheet
+        node={sheetNode}
+        open={Boolean(sheetNode)}
+        onOpenChange={(open) => {
+          if (!open) closeSheet();
+        }}
+      />
       <ConfirmDialog
         open={Boolean(pendingLevel)}
         onOpenChange={(open) => {

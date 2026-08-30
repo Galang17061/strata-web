@@ -42,13 +42,14 @@ type RbdCanvasProps = {
   onDirty: (dirty: boolean) => void;
   onSelect: (code: string | null) => void;
   onOpenLayer: (node: CanvasNode) => void;
+  onOpenComponent: (node: CanvasNode) => void;
   onStateChange: (state: Snapshot) => void;
 };
 
 const nodeTypes = { block: BlockNode, virtual: VirtualNode };
 const edgeTypes = { flow: FlowEdge };
 
-function CanvasInner({ nodes: initialNodes, edges: initialEdges, editable, busy = false, onDirty, onSelect, onOpenLayer, onStateChange }: RbdCanvasProps) {
+function CanvasInner({ nodes: initialNodes, edges: initialEdges, editable, busy = false, onDirty, onSelect, onOpenLayer, onOpenComponent, onStateChange }: RbdCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasEdge>(initialEdges);
   const [history, setHistory] = useState<Snapshot[]>([]);
@@ -169,6 +170,7 @@ function CanvasInner({ nodes: initialNodes, edges: initialEdges, editable, busy 
         onNodeDragStop={editable ? markDirty : undefined}
         onNodeDoubleClick={(_, node) => {
           if (node.data.kind === "subsystem") onOpenLayer(node);
+          if (node.data.kind === "component") onOpenComponent(node);
         }}
         onPaneClick={() => onSelect(null)}
         nodesDraggable={editable}

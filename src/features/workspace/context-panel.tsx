@@ -42,6 +42,7 @@ type ContextPanelProps = {
   parameters: ComponentInputParameters[];
   canEdit: boolean;
   onOpenLayer: (node: CanvasNode) => void;
+  onOpenComponent: (node: CanvasNode) => void;
 };
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -110,7 +111,7 @@ function FormulaDialog({ level, formula, open, onOpenChange }: { level: Level; f
   );
 }
 
-export function ContextPanel({ level, summary, selected, parameters, canEdit, onOpenLayer }: ContextPanelProps) {
+export function ContextPanel({ level, summary, selected, parameters, canEdit, onOpenLayer, onOpenComponent }: ContextPanelProps) {
   const [formulaOpen, setFormulaOpen] = useState(false);
 
   if (selected) {
@@ -156,6 +157,13 @@ export function ContextPanel({ level, summary, selected, parameters, canEdit, on
           <div className="border-t border-border p-4">
             <Button variant="secondary" className="w-full" onClick={() => onOpenLayer(selected)}>
               Open this layer <ArrowRight />
+            </Button>
+          </div>
+        ) : null}
+        {data.kind === "component" ? (
+          <div className="border-t border-border p-4">
+            <Button variant="secondary" className="w-full" onClick={() => onOpenComponent(selected)}>
+              Open component <ArrowRight />
             </Button>
           </div>
         ) : null}
