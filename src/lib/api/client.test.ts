@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ApiError,
   api,
+  fileNameFromDisposition,
   messageFromErrorBody,
   queryString,
   setUnauthorizedHandler,
@@ -111,5 +112,14 @@ describe("queryString", () => {
   it("skips empty values and encodes the rest", () => {
     expect(queryString({ page: 1, pageSize: 10, search: "", sortBy: undefined })).toBe("?page=1&pageSize=10");
     expect(queryString({})).toBe("");
+  });
+});
+
+describe("fileNameFromDisposition", () => {
+  it("prefers the encoded name, then the plain one, then the fallback", () => {
+    expect(fileNameFromDisposition("attachment; filename=Master_Template.xlsx; filename*=UTF-8''Master%20Template.xlsx", "x.xlsx")).toBe("Master Template.xlsx");
+    expect(fileNameFromDisposition('attachment; filename="parts.xlsx"', "x.xlsx")).toBe("parts.xlsx");
+    expect(fileNameFromDisposition("attachment", "x.xlsx")).toBe("x.xlsx");
+    expect(fileNameFromDisposition(null, "x.xlsx")).toBe("x.xlsx");
   });
 });
