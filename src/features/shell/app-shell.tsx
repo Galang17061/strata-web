@@ -37,11 +37,21 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <TooltipProvider>
+      <a
+        href="#main-content"
+        className="sr-only z-50 rounded-sm bg-primary px-3 py-2 text-body-sm font-semibold text-primary-foreground focus-visible:not-sr-only focus-visible:fixed focus-visible:top-2 focus-visible:left-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        Skip to content
+      </a>
       <div className="flex min-h-dvh">
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar />
-          <main className={cn("flex-1", fullBleed ? "flex min-h-0 flex-col" : "mx-auto w-full max-w-content px-4 py-6 lg:px-6")}>
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className={cn("flex-1 outline-none", fullBleed ? "flex min-h-0 flex-col" : "mx-auto w-full max-w-content px-4 py-6 lg:px-6")}
+          >
             <PageEnter key={pathname} className={cn(fullBleed && "flex min-h-0 flex-1 flex-col")}>
               {children}
             </PageEnter>
