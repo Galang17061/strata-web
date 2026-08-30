@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
-import { Columns3, FileDown, FileUp, Plus, Rows2, Rows3, Search } from "lucide-react";
+import { ChevronDown, Columns3, Download, FileDown, FileSpreadsheet, FileUp, Plus, Rows2, Rows3, Search } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -19,7 +20,7 @@ import { TablePagination } from "@/components/ui/table-pagination";
 import { PermissionGate } from "@/features/auth/permission-gate";
 import { MODULES } from "@/features/auth/roles";
 import { usePermissions } from "@/features/auth/session";
-import { deleteMasterComponent, downloadComponentTemplate, listMasterComponents } from "@/features/master-data/api";
+import { deleteMasterComponent, downloadComponentTemplate, exportComponents, listMasterComponents } from "@/features/master-data/api";
 import { ComponentDialog } from "@/features/master-data/component-dialog";
 import { ComponentsTable, hideableColumns } from "@/features/master-data/components-table";
 import { ImportDialog } from "@/features/master-data/import-dialog";
@@ -63,6 +64,14 @@ export function ComponentsScreen() {
       toast.success("Template on its way", { description: "Fill a row per part, then import the sheet." });
     },
     onError: (error) => toast.error("Could not fetch the template", { description: error.message }),
+  });
+  const exporting = useMutation({
+    mutationFn: exportComponents,
+    onSuccess: (file) => {
+      downloadBlob(file.fileName, file.blob);
+      toast.success("Catalogue exported", { description: file.fileName });
+    },
+    onError: (error) => toast.error("Could not export the catalogue", { description: error.message }),
   });
   const remove = useMutation({
     mutationFn: (component: MasterComponent) => deleteMasterComponent(component.componentId),
@@ -110,16 +119,32 @@ export function ComponentsScreen() {
         description={components.data ? `${countOf(total, "part")} a system can be built from.` : "The catalogue of parts a system can be built from."}
         actions={
           <>
-            <PermissionGate moduleName={MODULES.MASTER_DATA} permission="download">
-              <Button variant="secondary" loading={template.isPending} onClick={() => template.mutate()}>
-                <FileDown /> Template
-              </Button>
-            </PermissionGate>
-            <PermissionGate moduleName={MODULES.MASTER_DATA} permission="create">
-              <Button variant="secondary" onClick={() => setImportOpen(true)}>
-                <FileUp /> Import
-              </Button>
-            </PermissionGate>
+            {permissions.canDownload || permissions.canCreate ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" loading={template.isPending || exporting.isPending}>
+                    <FileSpreadsheet /> Spreadsheet <ChevronDown className="text-foreground-muted" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {permissions.canDownload ? (
+                    <DropdownMenuItem onSelect={() => template.mutate()}>
+                      <FileDown /> Download the template
+                    </DropdownMenuItem>
+                  ) : null}
+                  {permissions.canCreate ? (
+                    <DropdownMenuItem onSelect={() => setImportOpen(true)}>
+                      <FileUp /> Import from a workbook
+                    </DropdownMenuItem>
+                  ) : null}
+                  {permissions.canDownload ? (
+                    <DropdownMenuItem onSelect={() => exporting.mutate()}>
+                      <Download /> Export the catalogue
+                    </DropdownMenuItem>
+                  ) : null}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
             <PermissionGate moduleName={MODULES.MASTER_DATA} permission="create">
               <Button onClick={openCreate}>
                 <Plus /> New component

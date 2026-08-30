@@ -24,6 +24,10 @@ export function downloadComponentTemplate(): Promise<DownloadedFile> {
   return api.download("/MasterComponent/template", "component-template.xlsx");
 }
 
+export function exportComponents(): Promise<DownloadedFile> {
+  return api.download("/MasterComponent/export", "components.xlsx");
+}
+
 export function deleteMasterComponent(componentId: string): Promise<Envelope<null>> {
   return api.delete<Envelope<null>>(`/MasterComponent/${encodeURIComponent(componentId)}`, { silent: true });
 }
