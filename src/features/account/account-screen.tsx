@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { listUsers } from "@/features/account/api";
+import { RoleBadge } from "@/features/account/role-badge";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
 import { countOf } from "@/lib/format";
@@ -59,6 +60,7 @@ export function AccountScreen() {
               <TableHead>Name</TableHead>
               <TableHead>Username</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -67,6 +69,9 @@ export function AccountScreen() {
                 <TableCell className="font-medium text-foreground">{user.fullName}</TableCell>
                 <TableCell className="font-mono text-foreground-muted">{user.userName}</TableCell>
                 <TableCell className="text-foreground-muted">{user.email}</TableCell>
+                <TableCell>
+                  <RoleBadge roleName={user.roleName} />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
