@@ -4,10 +4,12 @@ import { Boxes } from "lucide-react";
 import { Sheet, SheetBody, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CanvasNode } from "@/features/workspace/model";
+import { PropertiesTab } from "@/features/workspace/sheet/properties-tab";
 
 type ComponentSheetProps = {
   node: CanvasNode | null;
   open: boolean;
+  canEdit: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
@@ -18,7 +20,7 @@ const tabs = [
   { value: "curve", label: "Curve", hint: "How its chance of working falls over time." },
 ] as const;
 
-export function ComponentSheet({ node, open, onOpenChange }: ComponentSheetProps) {
+export function ComponentSheet({ node, open, canEdit, onOpenChange }: ComponentSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="p-0">
@@ -47,7 +49,11 @@ export function ComponentSheet({ node, open, onOpenChange }: ComponentSheetProps
           {tabs.map((tab) => (
             <TabsContent key={tab.value} value={tab.value} className="min-h-0">
               <SheetBody>
-                <p className="text-body-sm text-foreground-muted">{tab.hint}</p>
+                {tab.value === "properties" && node ? (
+                  <PropertiesTab key={node.data.entityId} systemComponentId={node.data.entityId} canEdit={canEdit} />
+                ) : (
+                  <p className="text-body-sm text-foreground-muted">{tab.hint}</p>
+                )}
               </SheetBody>
             </TabsContent>
           ))}

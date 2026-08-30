@@ -391,6 +391,7 @@ export function WorkspaceScreen() {
       <ComponentSheet
         node={sheetNode}
         open={Boolean(sheetNode)}
+        canEdit={permissions.canUpdate}
         onOpenChange={(open) => {
           if (!open) closeSheet();
         }}
