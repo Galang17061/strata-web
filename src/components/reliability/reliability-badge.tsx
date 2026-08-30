@@ -37,6 +37,15 @@ export function useValuePulse(value: unknown) {
   return pulse;
 }
 
+export function PulseValue({ value, className, children }: { value: unknown; className?: string; children: React.ReactNode }) {
+  const pulse = useValuePulse(value);
+  return (
+    <span data-pulse={pulse ? "true" : undefined} className={cn("value-pulse", className)}>
+      {children}
+    </span>
+  );
+}
+
 export function ReliabilityBadge({
   value,
   size = "md",

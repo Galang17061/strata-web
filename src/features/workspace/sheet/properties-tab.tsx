@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { PulseValue } from "@/components/reliability/reliability-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -134,14 +135,16 @@ function UnitField({
   );
 }
 
-function ReadOnlyRow({ label, symbol, children }: { label: string; symbol: string; children: React.ReactNode }) {
+function ReadOnlyRow({ label, symbol, value, children }: { label: string; symbol: string; value: unknown; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3 py-2">
       <span className="flex items-baseline gap-2 text-caption uppercase text-foreground-muted">
         {label}
         <span className="font-mono text-foreground-subtle normal-case">{symbol}</span>
       </span>
-      <span className="font-mono text-numeric text-foreground">{children}</span>
+      <PulseValue value={value} className="font-mono text-numeric text-foreground">
+        {children}
+      </PulseValue>
     </div>
   );
 }
@@ -152,21 +155,21 @@ export function FittedFigures({ detail }: { detail: ComponentDetail }) {
     <div className="flex flex-col gap-1">
       <p className="text-caption uppercase text-foreground-muted">Fitted from the failure log</p>
       <div className="divide-y divide-border rounded-sm border border-border bg-surface-sunken px-3">
-        <ReadOnlyRow label="Failure rate" symbol="λ">
+        <ReadOnlyRow label="Failure rate" symbol="λ" value={detail.failureRate}>
           {formatFailureRate(detail.failureRate)}
         </ReadOnlyRow>
-        <ReadOnlyRow label="Mean time between failures" symbol="MTBF">
+        <ReadOnlyRow label="Mean time between failures" symbol="MTBF" value={detail.mtbf}>
           {formatHours(detail.mtbf)}
         </ReadOnlyRow>
         {weibull ? (
           <>
-            <ReadOnlyRow label="Shape" symbol="β">
+            <ReadOnlyRow label="Shape" symbol="β" value={detail.shapeParameter}>
               {formatReliability(detail.shapeParameter, 4)}
             </ReadOnlyRow>
-            <ReadOnlyRow label="Scale" symbol="η">
+            <ReadOnlyRow label="Scale" symbol="η" value={detail.scaleParameter}>
               {formatHours(detail.scaleParameter)}
             </ReadOnlyRow>
-            <ReadOnlyRow label="Fit" symbol="R²">
+            <ReadOnlyRow label="Fit" symbol="R²" value={detail.regresi}>
               {formatReliability(detail.regresi, 4)}
             </ReadOnlyRow>
           </>
