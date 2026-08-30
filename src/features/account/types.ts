@@ -12,3 +12,11 @@ export type Role = {
   id: string;
   roleName: string;
 };
+
+export type UserInput = {
+  fullname: string;
+  userName: string;
+  email: string;
+  password: string;
+  roleId: string;
+};
