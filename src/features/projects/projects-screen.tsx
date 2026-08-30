@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, LayoutGrid, List, Pencil, Plus, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/components/brand/empty-state";
 import { EmptyBlocksIllustration } from "@/components/brand/illustrations";
 import { Stagger, StaggerItem } from "@/components/motion/reveal";
@@ -98,6 +98,8 @@ export function ProjectsScreen() {
   const debounced = useDebounce(search.trim(), 300);
   const [sort, setSort] = useState<SortKey>("name");
   const [view, setView] = useState<ViewMode>("grid");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Project | null>(null);
 
@@ -115,6 +117,11 @@ export function ProjectsScreen() {
 
   const list = useMemo(() => projects.data?.data ?? [], [projects.data]);
   const stats = useMemo(() => statsFor(systems.data?.data ?? []), [systems.data]);
+  const paged = useMemo(() => list.slice((page - 1) * pageSize, page * pageSize), [list, page, pageSize]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debounced, sort, pageSize]);
 
   usePaletteScope(
     "Projects",
@@ -167,6 +174,18 @@ export function ProjectsScreen() {
           <SelectContent>
             <SelectItem value="name">Name A to Z</SelectItem>
             <SelectItem value="newest">Newest first</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+          <SelectTrigger aria-label="Projects per page" className="w-24 font-mono tabular-nums">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {[10, 20, 50, 100].map((size) => (
+              <SelectItem key={size} value={String(size)} className="font-mono tabular-nums">
+                {size}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div role="radiogroup" aria-label="View" className="ml-auto inline-flex rounded-sm border border-border bg-surface-sunken p-0.5">
@@ -230,7 +249,7 @@ export function ProjectsScreen() {
         </Card>
       ) : view === "grid" ? (
         <Stagger inView={false} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {list.map((project) => (
+          {paged.map((project) => (
             <StaggerItem key={project.projectId} className="relative">
               <ProjectCard project={project} stats={stats.get(project.projectId)} canEdit={permissions.canUpdate} onEdit={() => openEdit(project)} />
             </StaggerItem>
@@ -249,7 +268,7 @@ export function ProjectsScreen() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {list.map((project) => {
+            {paged.map((project) => {
               const projectStats = stats.get(project.projectId);
               return (
                 <TableRow key={project.projectId}>
