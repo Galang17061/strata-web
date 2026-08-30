@@ -1,7 +1,8 @@
 "use client";
 
-import { Maximize2, Minimize2 } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { Download, Maximize2, Minimize2 } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,6 +12,7 @@ import type { Level } from "@/features/workspace/model";
 import type { PlotSeries } from "@/features/workspace/plot/plot-model";
 import { PlotTooltip } from "@/features/workspace/plot/plot-tooltip";
 import { useLevelPlot } from "@/features/workspace/plot/use-level-plot";
+import { downloadBlob, safeFileName, serializeSvg, svgTextToPng } from "@/lib/export-svg";
 import { formatCount } from "@/lib/format";
 import { reliabilityLabels, reliabilityThresholds } from "@/lib/reliability";
 import { cn } from "@/lib/utils";
@@ -52,9 +54,32 @@ export function PlotDialog({ open, onOpenChange, tree, level }: PlotDialogProps)
   const [mounted, setMounted] = useState(false);
   const [shown, setShown] = useState<string[]>([]);
   const [expanded, setExpanded] = useState(false);
+  const [exporting, setExporting] = useState<"svg" | "png" | null>(null);
+  const chartRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const exportChart = async (kind: "svg" | "png") => {
+    const svg = chartRef.current?.querySelector<SVGSVGElement>("svg.recharts-surface");
+    if (!svg || !plot) return;
+    setExporting(kind);
+    try {
+      const background = window.getComputedStyle(chartRef.current as HTMLElement).backgroundColor;
+      const text = serializeSvg(svg, background);
+      const name = `${safeFileName(plot.total.name)}-reliability`;
+      if (kind === "svg") {
+        downloadBlob(`${name}.svg`, new Blob([text], { type: "image/svg+xml;charset=utf-8" }));
+      } else {
+        downloadBlob(`${name}.png`, await svgTextToPng(text, svg.clientWidth, svg.clientHeight));
+      }
+      toast.success(`Plot saved as ${kind.toUpperCase()}`);
+    } catch (error) {
+      toast.error("Could not save the plot", { description: error instanceof Error ? error.message : undefined });
+    } finally {
+      setExporting(null);
+    }
+  };
   useEffect(() => {
     if (open) setShown([]);
   }, [open, level]);
@@ -101,7 +126,7 @@ export function PlotDialog({ open, onOpenChange, tree, level }: PlotDialogProps)
           </p>
         ) : (
           <div className={cn("flex flex-col gap-4", expanded && "min-h-0 flex-1")}>
-            <div className={cn("w-full", expanded ? "min-h-0 flex-1" : "h-80")}>
+            <div ref={chartRef} className={cn("w-full bg-surface-elevated", expanded ? "min-h-0 flex-1" : "h-80")}>
               {mounted ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={rows} margin={{ top: 8, right: 20, left: -8, bottom: 0 }}>
@@ -160,6 +185,14 @@ export function PlotDialog({ open, onOpenChange, tree, level }: PlotDialogProps)
                   </ComposedChart>
                 </ResponsiveContainer>
               ) : null}
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <Button variant="ghost" size="sm" loading={exporting === "svg"} disabled={exporting !== null} onClick={() => void exportChart("svg")}>
+                <Download /> SVG
+              </Button>
+              <Button variant="ghost" size="sm" loading={exporting === "png"} disabled={exporting !== null} onClick={() => void exportChart("png")}>
+                <Download /> PNG
+              </Button>
             </div>
             {plot.children.length > 0 ? (
               <div className="flex flex-col gap-2">
