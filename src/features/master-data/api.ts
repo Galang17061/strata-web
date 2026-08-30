@@ -25,3 +25,7 @@ export function createVendor(input: VendorInput): Promise<Envelope<unknown>> {
 export function updateVendor(vendorId: string, input: VendorInput): Promise<Envelope<unknown>> {
   return api.put<Envelope<unknown>>(`/MasterManufacturer/${encodeURIComponent(vendorId)}`, vendorForm(input));
 }
+
+export function deleteVendor(vendorId: string): Promise<Envelope<null>> {
+  return api.delete<Envelope<null>>(`/MasterManufacturer/${encodeURIComponent(vendorId)}`, { silent: true });
+}

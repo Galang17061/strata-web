@@ -1,23 +1,26 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { toast } from "sonner";
 import { EmptyState } from "@/components/brand/empty-state";
 import { LayersIllustration } from "@/components/brand/illustrations";
-import { Pencil, Plus } from "lucide-react";
 import { Stagger, StaggerItem } from "@/components/motion/reveal";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PermissionGate } from "@/features/auth/permission-gate";
 import { MODULES } from "@/features/auth/roles";
 import { usePermissions } from "@/features/auth/session";
-import { listVendors } from "@/features/master-data/api";
+import { deleteVendor, listVendors } from "@/features/master-data/api";
 import type { Vendor } from "@/features/master-data/types";
 import { VendorDialog } from "@/features/master-data/vendor-dialog";
 import { PageHeader } from "@/features/shell/page-header";
 import { useBreadcrumbs } from "@/features/shell/use-breadcrumbs";
+import { ApiError } from "@/lib/api/client";
 import { filesUrl } from "@/lib/files-url";
 import { formatCount, formatDate } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
@@ -78,25 +81,34 @@ function VendorLogo({ vendor }: { vendor: Vendor }) {
 type VendorCardProps = {
   vendor: Vendor;
   canEdit: boolean;
+  canDelete: boolean;
   onEdit: () => void;
+  onDelete: () => void;
 };
 
-function VendorCard({ vendor, canEdit, onEdit }: VendorCardProps) {
+function VendorCard({ vendor, canEdit, canDelete, onEdit, onDelete }: VendorCardProps) {
   return (
     <Card className="group h-full gap-4 transition-colors hover:border-border-strong">
       <div className="flex items-start justify-between gap-3">
         <VendorLogo vendor={vendor} />
-        {canEdit ? (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={`Edit ${vendor.manufacturerName}`}
-            onClick={onEdit}
-            className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-          >
-            <Pencil />
-          </Button>
-        ) : null}
+        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 has-focus-visible:opacity-100">
+          {canEdit ? (
+            <Button variant="ghost" size="icon-sm" aria-label={`Edit ${vendor.manufacturerName}`} onClick={onEdit}>
+              <Pencil />
+            </Button>
+          ) : null}
+          {canDelete ? (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={`Delete ${vendor.manufacturerName}`}
+              onClick={onDelete}
+              className="hover:text-danger"
+            >
+              <Trash2 />
+            </Button>
+          ) : null}
+        </div>
       </div>
       <div className="min-w-0">
         <CardTitle className="truncate">{vendor.manufacturerName}</CardTitle>
@@ -127,6 +139,23 @@ export function VendorsScreen() {
     setEditing(vendor);
     setDialogOpen(true);
   };
+  const [removing, setRemoving] = useState<Vendor | null>(null);
+  const queryClient = useQueryClient();
+  const remove = useMutation({
+    mutationFn: (vendor: Vendor) => deleteVendor(vendor.vendorId),
+    onSuccess: async (_, vendor) => {
+      setRemoving(null);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all });
+      toast.success("Vendor removed", { description: vendor.manufacturerName });
+    },
+    onError: (error, vendor) =>
+      toast.error("Could not remove the vendor", {
+        description:
+          error instanceof ApiError && error.status >= 500
+            ? `${vendor.manufacturerName} is still named by parts in the catalogue. Change those parts first.`
+            : error.message,
+      }),
+  });
 
   const newVendorButton = (
     <PermissionGate moduleName={MODULES.MASTER_DATA} permission="create">
@@ -157,12 +186,36 @@ export function VendorsScreen() {
         <Stagger inView={false} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {rows.map((vendor) => (
             <StaggerItem key={vendor.vendorId}>
-              <VendorCard vendor={vendor} canEdit={permissions.canUpdate} onEdit={() => openEdit(vendor)} />
+              <VendorCard
+                vendor={vendor}
+                canEdit={permissions.canUpdate}
+                canDelete={permissions.canDelete}
+                onEdit={() => openEdit(vendor)}
+                onDelete={() => setRemoving(vendor)}
+              />
             </StaggerItem>
           ))}
         </Stagger>
       )}
       <VendorDialog open={dialogOpen} onOpenChange={setDialogOpen} vendor={editing} />
+      <ConfirmDialog
+        open={removing !== null}
+        onOpenChange={(open) => {
+          if (!open) setRemoving(null);
+        }}
+        title="Remove this vendor?"
+        description={
+          removing
+            ? `${removing.manufacturerName} will be gone from the catalogue. This only works while no part names it.`
+            : ""
+        }
+        confirmLabel="Remove vendor"
+        destructive
+        loading={remove.isPending}
+        onConfirm={() => {
+          if (removing) remove.mutate(removing);
+        }}
+      />
     </div>
   );
 }
