@@ -406,8 +406,10 @@ export function WorkspaceScreen() {
             role="separator"
             aria-orientation="vertical"
             aria-label="Resize the layers panel"
+            title="Drag to resize, double-click to reset"
             onPointerDown={startPanelDrag("tree")}
-            className="absolute inset-y-0 -right-1 z-10 hidden w-2 cursor-col-resize lg:block"
+            onDoubleClick={() => setTreeWidth(280)}
+            className="absolute inset-y-0 -right-1 z-10 hidden w-2 cursor-col-resize transition-colors duration-(--dur-fast) hover:bg-primary/20 active:bg-primary/30 lg:block"
           />
         </aside>
         <section className={cn("relative min-h-0", !canvas && "flex items-center justify-center")} aria-label="Canvas">
@@ -443,8 +445,10 @@ export function WorkspaceScreen() {
             role="separator"
             aria-orientation="vertical"
             aria-label="Resize the details panel"
+            title="Drag to resize, double-click to reset"
             onPointerDown={startPanelDrag("details")}
-            className="absolute inset-y-0 -left-1 z-10 hidden w-2 cursor-col-resize lg:block"
+            onDoubleClick={() => setDetailsWidth(340)}
+            className="absolute inset-y-0 -left-1 z-10 hidden w-2 cursor-col-resize transition-colors duration-(--dur-fast) hover:bg-primary/20 active:bg-primary/30 lg:block"
           />
         </aside>
       </div>
