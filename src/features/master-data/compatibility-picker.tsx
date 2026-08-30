@@ -46,7 +46,7 @@ export function CompatibilityPicker({ value, onChange, excludeId = null, id }: C
 
   return (
     <div className="flex flex-col gap-2">
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover modal open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             id={id}
