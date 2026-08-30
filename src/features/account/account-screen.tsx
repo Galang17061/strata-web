@@ -14,6 +14,7 @@ import { TablePagination } from "@/components/ui/table-pagination";
 import { deleteUser, listUsers } from "@/features/account/api";
 import { ResetPasswordDialog } from "@/features/account/reset-password-dialog";
 import { RoleBadge } from "@/features/account/role-badge";
+import { RolesCard } from "@/features/account/roles-card";
 import type { User } from "@/features/account/types";
 import { UserSheet } from "@/features/account/user-sheet";
 import { useSession } from "@/features/auth/session";
@@ -153,6 +154,7 @@ export function AccountScreen() {
           plural="people"
         />
       ) : null}
+      <RolesCard />
       <UserSheet open={sheetOpen} onOpenChange={setSheetOpen} user={editing} />
       <ResetPasswordDialog
         user={resetting}

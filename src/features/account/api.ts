@@ -29,3 +29,7 @@ export function deleteUser(userId: string): Promise<Envelope<null>> {
 export function listRoles(): Promise<Envelope<Role[]>> {
   return api.get<Envelope<Role[]>>(`/Role${queryString({ page: 1, pageSize: 100 })}`);
 }
+
+export function updateRole(roleId: string, input: { roleName: string }): Promise<Envelope<unknown>> {
+  return api.put<Envelope<unknown>>(`/Role/${encodeURIComponent(roleId)}`, input);
+}
