@@ -44,7 +44,7 @@ export function formatHours(value: unknown): string {
 }
 
 export function formatMoney(value: unknown): string {
-  const digits = typeof value === "string" ? value.replace(/[^\d.-]/g, "") : value;
+  const digits = typeof value === "string" ? value.replace(/[^\d-]/g, "") : value;
   const parsed = toNumber(digits);
   if (parsed === null) return EMPTY;
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(parsed);

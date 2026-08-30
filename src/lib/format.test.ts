@@ -4,6 +4,7 @@ import {
   formatDate,
   formatFailureRate,
   formatHours,
+  formatMoney,
   formatPercent,
   formatReliability,
 } from "./format";
@@ -39,5 +40,13 @@ describe("other formats", () => {
     expect(formatPercent(0.875)).toBe("87.5%");
     expect(formatDate("2026-08-30T07:56:09Z")).toBe("30 Aug 2026");
     expect(formatDate("")).toBe("—");
+  });
+
+  it("writes a cost with thousands grouped whatever way it was stored", () => {
+    expect(formatMoney("125000000")).toBe("125,000,000");
+    expect(formatMoney("Rp. 8.500.000")).toBe("8,500,000");
+    expect(formatMoney(1200000)).toBe("1,200,000");
+    expect(formatMoney("")).toBe("—");
+    expect(formatMoney(null)).toBe("—");
   });
 });
