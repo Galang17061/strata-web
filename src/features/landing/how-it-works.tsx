@@ -1,8 +1,10 @@
 "use client";
 
 import { motion, useMotionValueEvent, useScroll, useTransform } from "motion/react";
+import { Plus } from "lucide-react";
 import { useRef, useState } from "react";
 import { Reveal } from "@/components/motion/reveal";
+import { Button } from "@/components/ui/button";
 import { formatReliability } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +33,7 @@ const steps = [
 
 const BASE_RELIABILITY = 0.9612;
 const LAYER_FACTOR = 0.98;
+const MAX_SUBSYSTEMS = 6;
 
 type BuiltLayer = {
   id: string;
@@ -48,8 +51,18 @@ export function buildLayers(subIds: string[]): BuiltLayer[] {
 }
 
 function LayerBuilder() {
-  const layers = buildLayers(["sub-a", "sub-b", "sub-c"]);
+  const [subIds, setSubIds] = useState<string[]>(["sub-a", "sub-b", "sub-c"]);
+  const counter = useRef(0);
+
+  const layers = buildLayers(subIds);
   const topDown = [...layers].reverse();
+  const atCap = subIds.length >= MAX_SUBSYSTEMS;
+
+  const addSubSystem = () => {
+    if (atCap) return;
+    counter.current += 1;
+    setSubIds((current) => [...current, `sub-new-${counter.current}`]);
+  };
 
   let subLabel = 0;
 
@@ -76,8 +89,16 @@ function LayerBuilder() {
           );
         })}
       </ol>
+      <div className="flex items-center justify-between gap-3">
+        <Button type="button" onClick={addSubSystem} disabled={atCap} className="w-full sm:w-auto">
+          <Plus /> Add sub-system
+        </Button>
+        <span className="text-caption text-foreground-muted" aria-hidden="true">
+          {atCap ? "That is as deep as the demo goes." : `${subIds.length} of ${MAX_SUBSYSTEMS} layers`}
+        </span>
+      </div>
       <p className="text-body-sm text-foreground-muted">
-        Each sub-system sits in series, so the figure at the top settles a little lower than the parts beneath it.
+        Each sub-system sits in series, so the system figure at the top settles a little lower with every layer you add.
       </p>
     </div>
   );
@@ -132,7 +153,7 @@ export function LandingHowItWorks() {
           <div className="rounded-xl border border-border bg-surface-sunken/40 p-5">
             <div className="mb-4 flex items-center justify-between">
               <p className="text-caption uppercase text-primary">Live model</p>
-              <p className="text-caption text-foreground-muted">Scored bottom to top</p>
+              <p className="text-caption text-foreground-muted">Build the stack yourself</p>
             </div>
             <LayerBuilder />
           </div>
