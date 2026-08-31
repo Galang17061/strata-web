@@ -12,6 +12,7 @@ import { formatHours, formatReliability } from "@/lib/format";
 import {
   curvePoints,
   exponentialReliability,
+  poissonReliability,
   weibullReliability,
   type Distribution,
 } from "@/lib/reliability-math";
@@ -21,6 +22,7 @@ const maxHours = 20000;
 const shape = 1.8;
 const scale = 12000;
 const failureRate = 1 / 12000;
+const allowedFailures = 1;
 
 export function LandingLiveCurve() {
   const [hours, setHours] = useState(8000);
@@ -33,18 +35,22 @@ export function LandingLiveCurve() {
   }, []);
 
   const points = useMemo(
-    () => curvePoints(distribution, maxHours, 80, { shape, scale, failureRate }),
+    () => curvePoints(distribution, maxHours, 80, { shape, scale, failureRate, allowedFailures }),
     [distribution],
   );
   const value =
     distribution === "weibull"
       ? weibullReliability(hours, shape, scale)
-      : exponentialReliability(hours, failureRate);
+      : distribution === "poisson"
+        ? poissonReliability(hours, failureRate, allowedFailures)
+        : exponentialReliability(hours, failureRate);
 
   const tex =
     distribution === "weibull"
       ? `R(t) = e^{-\\left(\\frac{t}{\\eta}\\right)^{\\beta}} = e^{-\\left(\\frac{${hours}}{${scale}}\\right)^{${shape}}} = ${formatReliability(value, 4)}`
-      : `R(t) = e^{-\\lambda t} = e^{-\\frac{${hours}}{${scale}}} = ${formatReliability(value, 4)}`;
+      : distribution === "poisson"
+        ? `R(t) = \\sum_{k=0}^{c} \\frac{e^{-\\lambda t}(\\lambda t)^{k}}{k!} = ${formatReliability(value, 4)}`
+        : `R(t) = e^{-\\lambda t} = e^{-\\frac{${hours}}{${scale}}} = ${formatReliability(value, 4)}`;
 
   return (
     <section className="mx-auto w-full max-w-content px-6 py-20 lg:py-28">
@@ -130,7 +136,7 @@ export function LandingLiveCurve() {
           <div className="flex flex-col gap-2">
             <Label>Distribution</Label>
             <div role="radiogroup" aria-label="Distribution" className="inline-flex rounded-sm border border-border bg-surface-sunken p-0.5">
-              {(["weibull", "exponential"] as const).map((option) => (
+              {(["weibull", "exponential", "poisson"] as const).map((option) => (
                 <Button
                   key={option}
                   type="button"
