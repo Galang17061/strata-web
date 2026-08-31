@@ -1,5 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { adjustBlock, evaluateFormula, kOutOfN, plotTimes } from "./plot-model";
+import type { PlotComponentParameters } from "@/features/workspace/types";
+import { adjustBlock, componentReliabilityAt, evaluateFormula, kOutOfN, plotTimes } from "./plot-model";
+
+const plotPart = (over: Partial<PlotComponentParameters>): PlotComponentParameters => ({
+  systemComponentId: "SCP-00001",
+  componentName: "Pump",
+  vendorName: null,
+  failureRate: null,
+  runningHours: null,
+  formulaCode: null,
+  cost: null,
+  activeComponent: null,
+  totalComponent: null,
+  serialNumber: null,
+  distributionType: null,
+  shapeParameter: null,
+  scaleParameter: null,
+  componentReliability: null,
+  mtbf: null,
+  allowedFailures: null,
+  ...over,
+});
 
 describe("evaluateFormula", () => {
   it("reads the formulas the service writes", () => {
@@ -29,6 +50,18 @@ describe("adjustBlock", () => {
     expect(adjustBlock(0.9, "Partial", 2, 3)).toBeCloseTo(0.972, 12);
     expect(adjustBlock(0.9, "Parallel", 2, 3)).toBeCloseTo(0.972, 12);
     expect(adjustBlock(0.9, "Partial", 3, 3)).toBe(0.9);
+  });
+});
+
+describe("componentReliabilityAt", () => {
+  it("keeps a tolerant part above the plain one and equal to it at zero allowance", () => {
+    const plain = componentReliabilityAt(plotPart({ distributionType: "Exponential", failureRate: 0.00000851 }), 8000);
+    const zero = componentReliabilityAt(plotPart({ distributionType: "Poisson", failureRate: 0.00000851, allowedFailures: 0 }), 8000);
+    const tolerant = componentReliabilityAt(plotPart({ distributionType: "Poisson", failureRate: 0.00000851, allowedFailures: 2 }), 8000);
+    expect(zero).toBeCloseTo(plain, 12);
+    expect(tolerant).toBeCloseTo(0.9999500229981053, 12);
+    expect(tolerant).toBeGreaterThan(plain);
+    expect(componentReliabilityAt(plotPart({ distributionType: "Poisson", failureRate: null }), 8000)).toBe(0);
   });
 });
 
