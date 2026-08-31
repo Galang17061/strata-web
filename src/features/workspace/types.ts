@@ -118,6 +118,7 @@ export type ComponentDetail = {
   totalComponent: number | null;
   regresi: number | null;
   mtbf: number | null;
+  allowedFailures: number | null;
   createdAt: string | null;
   updatedAt: string | null;
 };
@@ -143,6 +144,7 @@ export type ComponentUpdateInput = {
   activeComponent: number;
   totalComponent: number;
   mtbf: number;
+  allowedFailures: number;
 };
 
 export type FailureEvent = {

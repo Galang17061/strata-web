@@ -25,6 +25,7 @@ export type PropertiesForm = {
   wiring: Wiring;
   total: string;
   active: string;
+  allowedFailures: string;
 };
 
 const distributionCopy: Record<Distribution, { label: string; hint: string }> = {
@@ -62,6 +63,7 @@ export function formFromDetail(detail: ComponentDetail): PropertiesForm {
     wiring: wiringOf(detail.connectionType),
     total,
     active,
+    allowedFailures: String(detail.allowedFailures ?? 0),
   };
 }
 
@@ -87,6 +89,10 @@ export function formProblem(form: PropertiesForm): string | null {
   if (active > total) return "More units cannot be required than exist.";
   if (form.wiring === "partial" && total < 3) return "k out of n needs at least three identical units.";
   if (form.wiring === "partial" && (active < 2 || active === total)) return "For k out of n, k must be at least 2 and less than n.";
+  if (form.distribution === "poisson") {
+    const allowed = Number(form.allowedFailures);
+    if (form.allowedFailures === "" || !Number.isInteger(allowed) || allowed < 0) return "Allowed failures must be zero or a whole number.";
+  }
   return null;
 }
 
@@ -105,6 +111,7 @@ export function toUpdateInput(detail: ComponentDetail, form: PropertiesForm): Co
     activeComponent: Number(form.active),
     totalComponent: Number(form.total),
     mtbf: detail.mtbf ?? 0,
+    allowedFailures: Number(form.allowedFailures || 0),
   };
 }
 
@@ -273,6 +280,18 @@ export function PropertiesTab({ systemComponentId, canEdit }: PropertiesTabProps
         </Select>
         <p className="text-caption text-foreground-muted normal-case tracking-normal">{distributionCopy[form.distribution].hint}</p>
       </div>
+
+      {form.distribution === "poisson" ? (
+        <UnitField
+          id="component-allowed-failures"
+          label="Allowed failures"
+          unit="c"
+          value={form.allowedFailures}
+          disabled={!canEdit}
+          onChange={(value) => update({ allowedFailures: digitsOnly(value) })}
+          hint="How many faults this part may take before it counts as down."
+        />
+      ) : null}
 
       <UnitField
         id="component-running-hours"
