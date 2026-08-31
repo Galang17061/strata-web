@@ -4,39 +4,86 @@ import { motion, useMotionValueEvent, useScroll, useTransform } from "motion/rea
 import { useRef, useState } from "react";
 import { Reveal } from "@/components/motion/reveal";
 import { formatReliability } from "@/lib/format";
-import { useMotionTokens } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 const steps = [
   {
     title: "Components",
     text: "Each physical part gets a distribution, running hours, and its failure history.",
-    value: 0.9612,
   },
   {
-    title: "Level 3",
-    text: "Groups of components are wired on the canvas and scored from their parts.",
-    value: 0.9418,
+    title: "Groups",
+    text: "Parts are wired on the canvas into groups and scored straight from their parts.",
   },
   {
-    title: "Level 2",
-    text: "Minor subsystems combine their groups; nothing is typed in by hand.",
-    value: 0.9204,
+    title: "Sub-systems",
+    text: "Groups fold into sub-systems, as many layers deep as the system really goes.",
   },
   {
-    title: "Level 1",
-    text: "Major subsystems inherit the numbers from below and pass them upward.",
-    value: 0.9031,
+    title: "Layers upward",
+    text: "Each layer inherits the numbers from below and passes them on; nothing is typed by hand.",
   },
   {
     title: "System",
     text: "The whole system reads as one figure, with the path back to every part.",
-    value: 0.8877,
   },
 ];
 
+const BASE_RELIABILITY = 0.9612;
+const LAYER_FACTOR = 0.98;
+
+type BuiltLayer = {
+  id: string;
+  kind: "base" | "sub" | "system";
+  value: number;
+};
+
+export function buildLayers(subIds: string[]): BuiltLayer[] {
+  const bottomUp: Omit<BuiltLayer, "value">[] = [
+    { id: "components", kind: "base" },
+    ...subIds.map((id) => ({ id, kind: "sub" as const })),
+    { id: "system", kind: "system" as const },
+  ];
+  return bottomUp.map((layer, height) => ({ ...layer, value: BASE_RELIABILITY * LAYER_FACTOR ** height }));
+}
+
+function LayerBuilder() {
+  const layers = buildLayers(["sub-a", "sub-b", "sub-c"]);
+  const topDown = [...layers].reverse();
+
+  let subLabel = 0;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <ol className="flex flex-col gap-2.5">
+        {topDown.map((layer) => {
+          if (layer.kind === "sub") subLabel += 1;
+          const isSystem = layer.kind === "system";
+          const isBase = layer.kind === "base";
+          const label = isSystem ? "System" : isBase ? "Components" : `Sub-system ${subLabel}`;
+          return (
+            <li
+              key={layer.id}
+              className={cn(
+                "flex items-center justify-between gap-3 rounded-lg border px-4 py-3",
+                (isSystem || isBase) && "border-primary bg-accent",
+                layer.kind === "sub" && "border-border-strong bg-surface",
+              )}
+            >
+              <span className={cn("text-body-sm font-semibold", isSystem || isBase ? "text-accent-foreground" : "text-foreground")}>{label}</span>
+              <span className="font-mono text-body-sm font-medium tabular-nums text-foreground">{formatReliability(layer.value, 4)}</span>
+            </li>
+          );
+        })}
+      </ol>
+      <p className="text-body-sm text-foreground-muted">
+        Each sub-system sits in series, so the figure at the top settles a little lower than the parts beneath it.
+      </p>
+    </div>
+  );
+}
+
 export function LandingHowItWorks() {
-  const tokens = useMotionTokens();
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.7", "end 0.5"] });
@@ -82,58 +129,13 @@ export function LandingHowItWorks() {
           </div>
         </div>
         <div className="lg:sticky lg:top-32 lg:self-start">
-          <svg viewBox="0 0 360 360" className="mx-auto w-full max-w-md" role="img" aria-label="Five stacked layers lighting up from the bottom as their values pass upward">
-            {steps.map((step, index) => {
-              const level = steps.length - 1 - index;
-              const width = 200 + level * 30;
-              const x = (360 - width) / 2;
-              const y = 36 + level * 60;
-              const lit = index <= active;
-              return (
-                <motion.g
-                  key={step.title}
-                  animate={{ opacity: lit ? 1 : 0.7, y: lit ? 0 : 4 }}
-                  transition={{ duration: tokens.base, ease: tokens.easeEmphasized }}
-                >
-                  <rect
-                    x={x}
-                    y={y}
-                    width={width}
-                    height={44}
-                    rx={10}
-                    strokeWidth={1.5}
-                    className={cn(
-                      "transition-colors duration-(--dur-base)",
-                      lit ? "fill-accent stroke-primary" : "fill-surface-sunken stroke-border",
-                    )}
-                  />
-                  <text x={x + 16} y={y + 27} className={cn("text-[13px] font-semibold", lit ? "fill-accent-foreground" : "fill-foreground-muted")}>
-                    {step.title}
-                  </text>
-                  <motion.text
-                    x={x + width - 16}
-                    y={y + 27}
-                    textAnchor="end"
-                    className="fill-foreground font-mono text-[13px] font-medium tabular-nums"
-                    animate={{ opacity: lit ? 1 : 0 }}
-                    transition={{ duration: tokens.base }}
-                  >
-                    {formatReliability(step.value, 4)}
-                  </motion.text>
-                  {index < steps.length - 1 ? (
-                    <motion.path
-                      d={`M180 ${y - 2} v-12`}
-                      className="stroke-primary"
-                      strokeWidth={2}
-                      strokeLinecap="round"
-                      animate={{ opacity: index < active ? 1 : 0, pathLength: index < active ? 1 : 0 }}
-                      transition={{ duration: tokens.base }}
-                    />
-                  ) : null}
-                </motion.g>
-              );
-            })}
-          </svg>
+          <div className="rounded-xl border border-border bg-surface-sunken/40 p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-caption uppercase text-primary">Live model</p>
+              <p className="text-caption text-foreground-muted">Scored bottom to top</p>
+            </div>
+            <LayerBuilder />
+          </div>
         </div>
       </div>
     </section>
