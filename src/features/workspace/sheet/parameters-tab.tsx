@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Sigma, TrendingDown } from "lucide-react";
+import { ShieldCheck, Sigma, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,12 +35,15 @@ export function ParametersTab({ systemComponentId, canEdit }: ParametersTabProps
       await queryClient.invalidateQueries({ queryKey: queryKeys.components.all });
       await queryClient.invalidateQueries({ queryKey: queryKeys.systems.all });
       await queryClient.invalidateQueries({ queryKey: ["hierarchy"] });
-      toast.success(distribution === "weibull" ? "Weibull fitted" : "Failure rate refreshed", {
+      toast.success(distribution === "weibull" ? "Weibull fitted" : distribution === "poisson" ? "Poisson refreshed" : "Failure rate refreshed", {
         description: "The figures were worked out again from the failure log.",
       });
     },
     onError: (error, distribution) =>
-      toast.error(distribution === "weibull" ? "Could not fit Weibull" : "Could not refresh the rate", { description: error.message }),
+      toast.error(
+        distribution === "weibull" ? "Could not fit Weibull" : distribution === "poisson" ? "Could not refresh Poisson" : "Could not refresh the rate",
+        { description: error.message },
+      ),
   });
 
   if (weibull.isPending || detail.isPending) {
@@ -77,9 +80,18 @@ export function ParametersTab({ systemComponentId, canEdit }: ParametersTabProps
             >
               <Sigma /> Refresh failure rate
             </Button>
+            <Button
+              variant={current === "poisson" ? "default" : "secondary"}
+              size="sm"
+              loading={fit.isPending && fit.variables === "poisson"}
+              disabled={fit.isPending}
+              onClick={() => fit.mutate("poisson")}
+            >
+              <ShieldCheck /> Fit Poisson
+            </Button>
           </div>
           <p className="text-caption text-foreground-muted normal-case tracking-normal">
-            Weibull needs at least two recorded failures. The exponential rate falls back to the master figure when the log is empty.
+            Weibull needs at least two recorded failures. The exponential and Poisson rates fall back to the stored figure when the log is empty.
           </p>
         </div>
       ) : null}
