@@ -92,6 +92,7 @@ export type PlotComponentParameters = {
   scaleParameter: number | null;
   componentReliability: number | null;
   mtbf: number | null;
+  allowedFailures: number | null;
 };
 
 export type ComponentDetail = {

@@ -1,6 +1,6 @@
 import type { SystemTree, TreeNode } from "@/features/projects/types";
 import type { HierarchyCalculation, PlotComponentParameters } from "@/features/workspace/types";
-import { exponentialReliability, weibullReliability } from "@/lib/reliability-math";
+import { exponentialReliability, poissonReliability, weibullReliability } from "@/lib/reliability-math";
 
 export type PlotSeries = {
   code: string;
@@ -131,6 +131,9 @@ export function componentReliabilityAt(parameters: PlotComponentParameters, hour
     return weibullReliability(hours, parameters.shapeParameter, parameters.scaleParameter);
   }
   if (parameters.failureRate === null) return 0;
+  if ((parameters.distributionType ?? "").toLowerCase() === "poisson") {
+    return poissonReliability(hours, parameters.failureRate, parameters.allowedFailures ?? 0);
+  }
   return exponentialReliability(hours, parameters.failureRate);
 }
 
