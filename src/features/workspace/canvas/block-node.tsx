@@ -23,6 +23,7 @@ function distributionGlyph(distribution: string | null): string | null {
   const lower = distribution.toLowerCase();
   if (lower.startsWith("weibull")) return "β η";
   if (lower.startsWith("exponential")) return "λ";
+  if (lower.startsWith("poisson")) return "λ c";
   return null;
 }
 
