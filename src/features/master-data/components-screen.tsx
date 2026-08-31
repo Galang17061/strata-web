@@ -39,7 +39,7 @@ export function ComponentsScreen() {
   const [search, setSearch] = useState("");
   const debounced = useDebounce(search.trim(), 300);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(12);
   const [sorting, setSortingState] = useState<SortingState>([{ id: "componentName", desc: false }]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [dense, setDense] = useState(false);

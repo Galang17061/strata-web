@@ -114,7 +114,7 @@ export function ProjectsScreen() {
   const [sort, setSort] = useState<SortKey>("name");
   const [view, setView] = useState<ViewMode>("grid");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(12);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Project | null>(null);
 
@@ -318,7 +318,6 @@ export function ProjectsScreen() {
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
           singular="project"
-          sizes={[10, 20, 50, 100]}
         />
       ) : null}
 

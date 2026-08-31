@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { Meta } from "@/lib/api/client";
 import { countOf, formatCount } from "@/lib/format";
 
-const pageSizes = [10, 25, 50];
+const pageSizes = [12, 24, 48];
 
 type TablePaginationProps = {
   meta: Meta | null;

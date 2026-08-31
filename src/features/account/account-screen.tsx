@@ -41,7 +41,7 @@ function UsersSkeleton() {
 export function AccountScreen() {
   useBreadcrumbs([{ label: "Account management" }]);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(12);
   const listParams = { page, pageSize };
   const users = useQuery({
     queryKey: queryKeys.users.list(listParams),
