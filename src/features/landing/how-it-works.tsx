@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useMotionValueEvent, useScroll, useTransform } from "motion/react";
-import { Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { useRef, useState } from "react";
 import { Reveal } from "@/components/motion/reveal";
 import { Button } from "@/components/ui/button";
@@ -63,11 +63,19 @@ function LayerBuilder() {
     counter.current += 1;
     setSubIds((current) => [...current, `sub-new-${counter.current}`]);
   };
+  const removeSubSystem = (id: string) => {
+    setSubIds((current) => current.filter((entry) => entry !== id));
+  };
 
   let subLabel = 0;
 
   return (
     <div className="flex flex-col gap-4">
+      <p className="sr-only" aria-live="polite">
+        {subIds.length === 0
+          ? "No sub-systems. Components feed the system directly."
+          : `${subIds.length} sub-system${subIds.length === 1 ? "" : "s"} between the components and the system.`}
+      </p>
       <ol className="flex flex-col gap-2.5">
         {topDown.map((layer) => {
           if (layer.kind === "sub") subLabel += 1;
@@ -83,7 +91,19 @@ function LayerBuilder() {
                 layer.kind === "sub" && "border-border-strong bg-surface",
               )}
             >
-              <span className={cn("text-body-sm font-semibold", isSystem || isBase ? "text-accent-foreground" : "text-foreground")}>{label}</span>
+              <span className="flex items-center gap-2">
+                <span className={cn("text-body-sm font-semibold", isSystem || isBase ? "text-accent-foreground" : "text-foreground")}>{label}</span>
+                {layer.kind === "sub" ? (
+                  <button
+                    type="button"
+                    onClick={() => removeSubSystem(layer.id)}
+                    aria-label={`Remove ${label}`}
+                    className="inline-flex size-5 items-center justify-center rounded-pill text-foreground-subtle transition-colors outline-none hover:bg-surface-sunken hover:text-danger focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Minus className="size-3.5" aria-hidden="true" />
+                  </button>
+                ) : null}
+              </span>
               <span className="font-mono text-body-sm font-medium tabular-nums text-foreground">{formatReliability(layer.value, 4)}</span>
             </li>
           );
