@@ -430,7 +430,7 @@ export function WorkspaceScreen() {
         <Info className="size-3.5" aria-hidden="true" /> The canvas works best on a wider screen.
       </p>
       <div
-        className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[var(--tree-width)_minmax(0,1fr)_var(--details-width)]"
+        className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-[var(--tree-width)_minmax(0,1fr)_var(--details-width)]"
         style={{ "--tree-width": `${treeWidth}px`, "--details-width": `${detailsWidth}px` } as React.CSSProperties}
       >
         <aside className="relative hidden min-h-0 border-r border-border bg-surface lg:block">

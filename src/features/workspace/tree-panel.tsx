@@ -231,7 +231,7 @@ export function TreePanel({ tree, level, values, selectedCode, canEdit, onOpenLe
           </Button>
         ) : null}
       </div>
-      <nav aria-label="System layers" className="flex-1 overflow-y-auto p-2">
+      <nav aria-label="System layers" className="relative flex-1 overflow-y-auto p-2">
         <button
           type="button"
           aria-current={systemActive ? "location" : undefined}
