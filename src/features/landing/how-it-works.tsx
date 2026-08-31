@@ -1,11 +1,20 @@
 "use client";
 
-import { motion, useMotionValueEvent, useScroll, useTransform } from "motion/react";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "motion/react";
 import { Minus, Plus } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Reveal } from "@/components/motion/reveal";
 import { Button } from "@/components/ui/button";
 import { formatReliability } from "@/lib/format";
+import { useMotionTokens } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 const steps = [
@@ -50,7 +59,25 @@ export function buildLayers(subIds: string[]): BuiltLayer[] {
   return bottomUp.map((layer, height) => ({ ...layer, value: BASE_RELIABILITY * LAYER_FACTOR ** height }));
 }
 
+function LiveValue({ value }: { value: number }) {
+  const reduced = useReducedMotion();
+  if (reduced) {
+    return <span className="font-mono text-body-sm font-medium tabular-nums text-foreground">{formatReliability(value, 4)}</span>;
+  }
+  return <SpringValue value={value} />;
+}
+
+function SpringValue({ value }: { value: number }) {
+  const spring = useSpring(value, { stiffness: 140, damping: 24 });
+  const text = useTransform(spring, (current) => formatReliability(current, 4));
+  useEffect(() => {
+    spring.set(value);
+  }, [value, spring]);
+  return <motion.span className="font-mono text-body-sm font-medium tabular-nums text-foreground">{text}</motion.span>;
+}
+
 function LayerBuilder() {
+  const tokens = useMotionTokens();
   const [subIds, setSubIds] = useState<string[]>(["sub-a", "sub-b", "sub-c"]);
   const counter = useRef(0);
 
@@ -77,37 +104,44 @@ function LayerBuilder() {
           : `${subIds.length} sub-system${subIds.length === 1 ? "" : "s"} between the components and the system.`}
       </p>
       <ol className="flex flex-col gap-2.5">
-        {topDown.map((layer) => {
-          if (layer.kind === "sub") subLabel += 1;
-          const isSystem = layer.kind === "system";
-          const isBase = layer.kind === "base";
-          const label = isSystem ? "System" : isBase ? "Components" : `Sub-system ${subLabel}`;
-          return (
-            <li
-              key={layer.id}
-              className={cn(
-                "flex items-center justify-between gap-3 rounded-lg border px-4 py-3",
-                (isSystem || isBase) && "border-primary bg-accent",
-                layer.kind === "sub" && "border-border-strong bg-surface",
-              )}
-            >
-              <span className="flex items-center gap-2">
-                <span className={cn("text-body-sm font-semibold", isSystem || isBase ? "text-accent-foreground" : "text-foreground")}>{label}</span>
-                {layer.kind === "sub" ? (
-                  <button
-                    type="button"
-                    onClick={() => removeSubSystem(layer.id)}
-                    aria-label={`Remove ${label}`}
-                    className="inline-flex size-5 items-center justify-center rounded-pill text-foreground-subtle transition-colors outline-none hover:bg-surface-sunken hover:text-danger focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <Minus className="size-3.5" aria-hidden="true" />
-                  </button>
-                ) : null}
-              </span>
-              <span className="font-mono text-body-sm font-medium tabular-nums text-foreground">{formatReliability(layer.value, 4)}</span>
-            </li>
-          );
-        })}
+        <AnimatePresence initial={false}>
+          {topDown.map((layer) => {
+            if (layer.kind === "sub") subLabel += 1;
+            const isSystem = layer.kind === "system";
+            const isBase = layer.kind === "base";
+            const label = isSystem ? "System" : isBase ? "Components" : `Sub-system ${subLabel}`;
+            return (
+              <motion.li
+                key={layer.id}
+                layout
+                initial={{ opacity: 0, y: -12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -12, scale: 0.98 }}
+                transition={{ duration: tokens.base, ease: tokens.easeEmphasized }}
+                className={cn(
+                  "flex items-center justify-between gap-3 rounded-lg border px-4 py-3",
+                  (isSystem || isBase) && "border-primary bg-accent",
+                  layer.kind === "sub" && "border-border-strong bg-surface",
+                )}
+              >
+                <span className="flex items-center gap-2">
+                  <span className={cn("text-body-sm font-semibold", isSystem || isBase ? "text-accent-foreground" : "text-foreground")}>{label}</span>
+                  {layer.kind === "sub" ? (
+                    <button
+                      type="button"
+                      onClick={() => removeSubSystem(layer.id)}
+                      aria-label={`Remove ${label}`}
+                      className="inline-flex size-5 items-center justify-center rounded-pill text-foreground-subtle transition-colors outline-none hover:bg-surface-sunken hover:text-danger focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Minus className="size-3.5" aria-hidden="true" />
+                    </button>
+                  ) : null}
+                </span>
+                <LiveValue value={layer.value} />
+              </motion.li>
+            );
+          })}
+        </AnimatePresence>
       </ol>
       <div className="flex items-center justify-between gap-3">
         <Button type="button" onClick={addSubSystem} disabled={atCap} className="w-full sm:w-auto">
