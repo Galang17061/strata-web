@@ -6,9 +6,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { fitDistribution, getComponent, listWeibullParameters } from "@/features/workspace/api";
+import { fitDistribution, getComponent, listPoissonParameters, listWeibullParameters } from "@/features/workspace/api";
 import { distributionOf, type Distribution } from "@/features/workspace/sheet/properties-tab";
-import { formatCount, formatDate, formatReliability } from "@/lib/format";
+import { formatCount, formatDate, formatFailureRate, formatReliability } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
 
 type ParametersTabProps = {
@@ -26,7 +26,12 @@ export function ParametersTab({ systemComponentId, canEdit }: ParametersTabProps
     queryKey: queryKeys.components.weibull(systemComponentId),
     queryFn: () => listWeibullParameters(systemComponentId),
   });
+  const poisson = useQuery({
+    queryKey: queryKeys.components.poisson(systemComponentId),
+    queryFn: () => listPoissonParameters(systemComponentId),
+  });
   const rows = weibull.data?.data ?? [];
+  const poissonRows = poisson.data?.data ?? [];
   const current = distributionOf(detail.data?.data);
 
   const fit = useMutation({
@@ -93,6 +98,50 @@ export function ParametersTab({ systemComponentId, canEdit }: ParametersTabProps
           <p className="text-caption text-foreground-muted normal-case tracking-normal">
             Weibull needs at least two recorded failures. The exponential and Poisson rates fall back to the stored figure when the log is empty.
           </p>
+        </div>
+      ) : null}
+      {current === "poisson" ? (
+        <div className="flex flex-col gap-3">
+          <p className="text-caption uppercase text-foreground-muted">Observed fault rates</p>
+          <Table dense>
+            <TableCaption className="sr-only">Poisson rates this part has been given</TableCaption>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead>Fitted</TableHead>
+                <TableHead numeric className="normal-case">
+                  t
+                </TableHead>
+                <TableHead numeric className="normal-case">
+                  λ = n / t
+                </TableHead>
+                <TableHead numeric className="normal-case">
+                  c
+                </TableHead>
+                <TableHead numeric className="normal-case">
+                  R(t)
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {poissonRows.length === 0 ? (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={5} className="py-6 text-center whitespace-normal text-foreground-muted">
+                    No observed rates yet. Record a failure, then fit Poisson.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                poissonRows.map((row) => (
+                  <TableRow key={row.poissonParameterId}>
+                    <TableCell className="text-foreground-muted">{formatDate(row.updatedAt ?? row.createdAt)}</TableCell>
+                    <TableCell numeric>{formatCount(row.failureTime)}</TableCell>
+                    <TableCell numeric>{formatFailureRate(row.failureRate)}</TableCell>
+                    <TableCell numeric>{formatCount(row.allowedFailures)}</TableCell>
+                    <TableCell numeric>{formatReliability(row.totalReliability, 4)}</TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       ) : null}
       <div className="flex flex-col gap-3">

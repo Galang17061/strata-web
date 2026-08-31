@@ -166,6 +166,17 @@ export type FailureEventInput = {
   runningHours: number;
 };
 
+export type PoissonParameter = {
+  poissonParameterId: string;
+  systemComponentId: string;
+  failureTime: number | null;
+  failureRate: number | null;
+  allowedFailures: number | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  totalReliability: number | null;
+};
+
 export type WeibullParameter = {
   weibullParameterId: string;
   systemComponentId: string;

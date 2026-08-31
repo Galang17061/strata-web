@@ -34,6 +34,7 @@ export const queryKeys = {
     failures: (systemComponentId: string, params: Record<string, unknown>) =>
       ["components", "failures", systemComponentId, params] as const,
     weibull: (systemComponentId: string) => ["components", "weibull", systemComponentId] as const,
+    poisson: (systemComponentId: string) => ["components", "poisson", systemComponentId] as const,
   },
   masterComponents: {
     all: ["master-components"] as const,

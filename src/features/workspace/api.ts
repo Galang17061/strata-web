@@ -17,6 +17,7 @@ import type {
   HierarchyView,
   HistoryEntry,
   PlotComponentParameters,
+  PoissonParameter,
   SystemTotal,
   WeibullParameter,
 } from "@/features/workspace/types";
@@ -114,6 +115,10 @@ export function deleteFailureEventsOfComponent(systemComponentId: string): Promi
 
 export function listWeibullParameters(systemComponentId: string): Promise<Envelope<WeibullParameter[]>> {
   return api.get<Envelope<WeibullParameter[]>>(`/SystemComponentProperties/${encodeURIComponent(systemComponentId)}/weibull-parameters`);
+}
+
+export function listPoissonParameters(systemComponentId: string): Promise<Envelope<PoissonParameter[]>> {
+  return api.get<Envelope<PoissonParameter[]>>(`/SystemComponentProperties/${encodeURIComponent(systemComponentId)}/poisson-parameters`);
 }
 
 export async function fitDistribution(systemComponentId: string, distribution: "weibull" | "exponential" | "poisson"): Promise<void> {
