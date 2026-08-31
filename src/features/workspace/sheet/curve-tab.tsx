@@ -22,12 +22,17 @@ export function curveHorizon(runningHours: number | null): number {
   return base * 2;
 }
 
-export function curveParameters(detail: ComponentDetail): { shape: number; scale: number; failureRate: number } | null {
+export function curveParameters(
+  detail: ComponentDetail,
+): { shape: number; scale: number; failureRate: number; allowedFailures?: number } | null {
   if (distributionOf(detail) === "weibull") {
     if (!detail.shapeParameter || !detail.scaleParameter) return null;
     return { shape: detail.shapeParameter, scale: detail.scaleParameter, failureRate: 0 };
   }
   if (detail.failureRate === null) return null;
+  if (distributionOf(detail) === "poisson") {
+    return { shape: 0, scale: 0, failureRate: detail.failureRate, allowedFailures: detail.allowedFailures ?? 0 };
+  }
   return { shape: 0, scale: 0, failureRate: detail.failureRate };
 }
 
@@ -128,7 +133,9 @@ export function CurveTab({ systemComponentId }: CurveTabProps) {
       <p className="text-caption text-foreground-muted normal-case tracking-normal">
         {distribution === "weibull"
           ? `Weibull with β ${formatReliability(parameters.shape, 4)} and η ${formatHours(parameters.scale)}, drawn to twice the running hours.`
-          : `Exponential with λ ${parameters.failureRate.toExponential(4)}, drawn to twice the running hours.`}
+          : distribution === "poisson"
+            ? `Poisson with λ ${parameters.failureRate.toExponential(4)}, tolerating ${parameters.allowedFailures ?? 0} faults, drawn to twice the running hours.`
+            : `Exponential with λ ${parameters.failureRate.toExponential(4)}, drawn to twice the running hours.`}
       </p>
     </div>
   );
