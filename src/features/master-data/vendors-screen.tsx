@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/brand/empty-state";
 import { LayersIllustration } from "@/components/brand/illustrations";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { PermissionGate } from "@/features/auth/permission-gate";
 import { MODULES } from "@/features/auth/roles";
 import { usePermissions } from "@/features/auth/session";
@@ -127,10 +128,29 @@ export function VendorsScreen() {
     queryKey: queryKeys.vendors.list(listParams),
     queryFn: () => listVendors(listParams),
   });
-  const rows = vendors.data?.data ?? [];
+  const rows = useMemo(() => vendors.data?.data ?? [], [vendors.data]);
   const permissions = usePermissions(MODULES.MASTER_DATA);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Vendor | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+  const paged = useMemo(() => rows.slice((page - 1) * pageSize, page * pageSize), [rows, page, pageSize]);
+  const pageMeta = useMemo(
+    () => ({
+      totalData: rows.length,
+      totalPage: Math.max(1, Math.ceil(rows.length / pageSize)),
+      currentPage: page,
+      pageSize,
+      hasNextPage: page * pageSize < rows.length,
+      hasPreviousPage: page > 1,
+    }),
+    [rows.length, page, pageSize],
+  );
+
+  useEffect(() => {
+    const lastPage = Math.max(1, Math.ceil(rows.length / pageSize));
+    if (page > lastPage) setPage(lastPage);
+  }, [rows.length, page, pageSize]);
 
   const openCreate = () => {
     setEditing(null);
@@ -186,7 +206,7 @@ export function VendorsScreen() {
         />
       ) : (
         <Stagger inView={false} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {rows.map((vendor) => (
+          {paged.map((vendor) => (
             <StaggerItem key={vendor.vendorId}>
               <VendorCard
                 vendor={vendor}
@@ -199,6 +219,16 @@ export function VendorsScreen() {
           ))}
         </Stagger>
       )}
+      {!vendors.isPending && rows.length > 0 ? (
+        <TablePagination
+          meta={pageMeta}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          singular="vendor"
+        />
+      ) : null}
       <VendorDialog open={dialogOpen} onOpenChange={setDialogOpen} vendor={editing} />
       <ConfirmDialog
         open={removing !== null}
