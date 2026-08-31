@@ -49,7 +49,7 @@ export function LandingLiveCurve() {
     distribution === "weibull"
       ? `R(t) = e^{-\\left(\\frac{t}{\\eta}\\right)^{\\beta}} = e^{-\\left(\\frac{${hours}}{${scale}}\\right)^{${shape}}} = ${formatReliability(value, 4)}`
       : distribution === "poisson"
-        ? `R(t) = \\sum_{k=0}^{c} \\frac{e^{-\\lambda t}(\\lambda t)^{k}}{k!} = ${formatReliability(value, 4)}`
+        ? `R(t) = \\sum_{k=0}^{${allowedFailures}} \\frac{e^{-\\lambda t}(\\lambda t)^{k}}{k!},\\;\\lambda t = \\tfrac{${hours}}{${scale}} \\Rightarrow ${formatReliability(value, 4)}`
         : `R(t) = e^{-\\lambda t} = e^{-\\frac{${hours}}{${scale}}} = ${formatReliability(value, 4)}`;
 
   return (
