@@ -22,11 +22,11 @@ const maxHours = 20000;
 const shape = 1.8;
 const scale = 12000;
 const failureRate = 1 / 12000;
-const allowedFailures = 1;
 
 export function LandingLiveCurve() {
   const [hours, setHours] = useState(8000);
   const [distribution, setDistribution] = useState<Distribution>("weibull");
+  const [allowedFailures, setAllowedFailures] = useState(1);
   const [mounted, setMounted] = useState(false);
   const gradientId = useId();
 
@@ -36,7 +36,7 @@ export function LandingLiveCurve() {
 
   const points = useMemo(
     () => curvePoints(distribution, maxHours, 80, { shape, scale, failureRate, allowedFailures }),
-    [distribution],
+    [distribution, allowedFailures],
   );
   const value =
     distribution === "weibull"
@@ -155,6 +155,26 @@ export function LandingLiveCurve() {
               ))}
             </div>
           </div>
+          {distribution === "poisson" ? (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="live-allowed-failures">Allowed failures</Label>
+                <span className="font-mono text-numeric text-foreground">{allowedFailures}</span>
+              </div>
+              <Slider
+                id="live-allowed-failures"
+                min={0}
+                max={5}
+                step={1}
+                value={[allowedFailures]}
+                onValueChange={(next) => setAllowedFailures(next[0] ?? 0)}
+                aria-label="Allowed failures"
+              />
+              <p className="text-caption text-foreground-muted normal-case tracking-normal">
+                How many faults the part may take before it counts as down. At zero this matches exponential.
+              </p>
+            </div>
+          ) : null}
           <div className="flex flex-col gap-2">
             <span className="text-caption uppercase text-foreground-muted">Chance it still works</span>
             <div className="flex items-center gap-3">
