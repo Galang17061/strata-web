@@ -116,11 +116,16 @@ export function listWeibullParameters(systemComponentId: string): Promise<Envelo
   return api.get<Envelope<WeibullParameter[]>>(`/SystemComponentProperties/${encodeURIComponent(systemComponentId)}/weibull-parameters`);
 }
 
-export async function fitDistribution(systemComponentId: string, distribution: "weibull" | "exponential"): Promise<void> {
+export async function fitDistribution(systemComponentId: string, distribution: "weibull" | "exponential" | "poisson"): Promise<void> {
   const base = `/SystemComponentProperties/${encodeURIComponent(systemComponentId)}`;
   if (distribution === "weibull") {
     await api.post<Envelope<unknown>>(`${base}/weibull-parameter`, []);
     await api.put<Envelope<unknown>>(`${base}/weibull`, {});
+    return;
+  }
+  if (distribution === "poisson") {
+    await api.post<Envelope<unknown>>(`${base}/poisson-parameter`, []).catch(() => undefined);
+    await api.put<Envelope<unknown>>(`${base}/poisson`, {});
     return;
   }
   await api.post<Envelope<unknown>>(`${base}/exponential-parameter`, []);

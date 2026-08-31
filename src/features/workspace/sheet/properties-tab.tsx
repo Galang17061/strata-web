@@ -16,7 +16,7 @@ import { formatFailureRate, formatHours, formatReliability } from "@/lib/format"
 import { queryKeys } from "@/lib/query-keys";
 import { cn } from "@/lib/utils";
 
-export type Distribution = "exponential" | "weibull";
+export type Distribution = "exponential" | "weibull" | "poisson";
 export type Wiring = "series" | "parallel" | "partial";
 
 export type PropertiesForm = {
@@ -30,6 +30,7 @@ export type PropertiesForm = {
 const distributionCopy: Record<Distribution, { label: string; hint: string }> = {
   exponential: { label: "Exponential", hint: "A constant failure rate λ. R(t) = e^(-λt)." },
   weibull: { label: "Weibull", hint: "Shape β and scale η fitted from the failure log. R(t) = e^(-(t/η)^β)." },
+  poisson: { label: "Poisson", hint: "Counts faults at rate λ and tolerates up to c of them. R(t) = Σ e^(-λt)(λt)^k/k!." },
 };
 
 const wiringCopy: Record<Wiring, { label: string; hint: string }> = {
@@ -39,7 +40,10 @@ const wiringCopy: Record<Wiring, { label: string; hint: string }> = {
 };
 
 export function distributionOf(detail: ComponentDetail | null | undefined): Distribution {
-  return detail?.distributionType?.toLowerCase() === "weibull" ? "weibull" : "exponential";
+  const lower = detail?.distributionType?.toLowerCase();
+  if (lower === "weibull") return "weibull";
+  if (lower === "poisson") return "poisson";
+  return "exponential";
 }
 
 export function wiringOf(connectionType: string | null | undefined): Wiring {
