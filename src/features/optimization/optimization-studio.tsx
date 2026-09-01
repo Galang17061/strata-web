@@ -9,8 +9,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { runOptimizationPreview } from "@/features/optimization/api";
+import { runOptimizationPreview, scoreOptimizationChoices } from "@/features/optimization/api";
 import { PreviewTable } from "@/features/optimization/preview-table";
+import { choicesOf, hasManualChanges, locksOf } from "@/features/optimization/selection";
 import type {
   OptimizationChoice,
   OptimizationMode,
@@ -249,15 +250,46 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
   const [settings, setSettings] = useState<OptimizationSettings>(defaultSettings);
   const [preview, setPreview] = useState<OptimizationPreview | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  const [selections, setSelections] = useState<Record<string, string>>({});
+  const [locked, setLocked] = useState<ReadonlySet<string>>(new Set());
+  const [scoredTotals, setScoredTotals] = useState<OptimizationPreview["totals"] | null>(null);
 
   const run = useMutation({
     mutationFn: (locks: OptimizationChoice[]) => runOptimizationPreview(toPreviewInput(rbdSystemId, settings, locks)),
     onSuccess: (envelope) => {
       setPreview(envelope.data);
+      setSelections({});
+      setScoredTotals(null);
       setProblem(null);
     },
     onError: (error) => setProblem(error.message),
   });
+
+  const score = useMutation({
+    mutationFn: (choices: OptimizationChoice[]) => scoreOptimizationChoices(rbdSystemId, choices),
+    onSuccess: (envelope) => setScoredTotals(envelope.data.totals),
+    onError: (error) => setProblem(error.message),
+  });
+
+  const selectVendor = (systemComponentId: string, componentId: string) => {
+    if (!preview) return;
+    const next = { ...selections, [systemComponentId]: componentId };
+    setSelections(next);
+    if (hasManualChanges(preview.slots, next)) {
+      score.mutate(choicesOf(preview.slots, next));
+    } else {
+      setScoredTotals(null);
+    }
+  };
+
+  const toggleLock = (systemComponentId: string) => {
+    setLocked((current) => {
+      const next = new Set(current);
+      if (next.has(systemComponentId)) next.delete(systemComponentId);
+      else next.add(systemComponentId);
+      return next;
+    });
+  };
 
   const startRun = (locks: OptimizationChoice[]) => {
     const message = settingsProblem(settings);
@@ -272,7 +304,12 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
   const reset = () => {
     setPreview(null);
     setProblem(null);
+    setSelections({});
+    setLocked(new Set());
+    setScoredTotals(null);
   };
+
+  const totals = scoredTotals ?? preview?.totals ?? null;
 
   return (
     <Dialog
@@ -307,21 +344,33 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-sm border border-border bg-surface-sunken px-4 py-3">
                 <p className="text-caption uppercase text-foreground-muted">Chance it works</p>
-                <p className="font-mono text-numeric-lg text-foreground">{formatReliability(preview.totals.reliability, 8)}</p>
+                <p className="font-mono text-numeric-lg text-foreground">{formatReliability(totals?.reliability, 8)}</p>
                 <p className="text-caption text-foreground-muted normal-case tracking-normal">
-                  now {formatReliability(preview.totals.baselineReliability, 8)}
+                  now {formatReliability(totals?.baselineReliability, 8)}
                 </p>
               </div>
               <div className="rounded-sm border border-border bg-surface-sunken px-4 py-3">
                 <p className="text-caption uppercase text-foreground-muted">Bill for the parts</p>
-                <p className="font-mono text-numeric-lg text-foreground">{formatMoney(preview.totals.cost)}</p>
-                <p className="text-caption text-foreground-muted normal-case tracking-normal">now {formatMoney(preview.totals.baselineCost)}</p>
+                <p className="font-mono text-numeric-lg text-foreground">{formatMoney(totals?.cost)}</p>
+                <p className="text-caption text-foreground-muted normal-case tracking-normal">now {formatMoney(totals?.baselineCost)}</p>
               </div>
             </div>
-            <PreviewTable slots={preview.slots} fixedSlots={preview.fixedSlots} selections={{}} />
+            <PreviewTable
+              slots={preview.slots}
+              fixedSlots={preview.fixedSlots}
+              selections={selections}
+              locked={locked}
+              onSelect={selectVendor}
+              onToggleLock={toggleLock}
+            />
+            {problem ? (
+              <p role="alert" className="rounded-sm bg-danger/10 px-3 py-2 text-body-sm text-danger">
+                {problem}
+              </p>
+            ) : null}
             <div className="flex items-center justify-end gap-2">
-              <Button variant="secondary" size="sm" loading={run.isPending} onClick={() => startRun([])}>
-                <Play /> Run again
+              <Button variant="secondary" size="sm" loading={run.isPending} onClick={() => startRun(locksOf(preview.slots, selections, locked))}>
+                <Play /> Run again{locked.size > 0 ? ` with ${locked.size} pinned` : ""}
               </Button>
             </div>
           </div>

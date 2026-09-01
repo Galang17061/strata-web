@@ -1,5 +1,8 @@
 "use client";
 
+import { Lock, LockOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { OptimizationFixedSlot, OptimizationSlot } from "@/features/optimization/types";
 import { formatFailureRate, formatMoney } from "@/lib/format";
@@ -17,9 +20,12 @@ type PreviewTableProps = {
   slots: OptimizationSlot[];
   fixedSlots: OptimizationFixedSlot[];
   selections: Record<string, string>;
+  locked?: ReadonlySet<string>;
+  onSelect?: (systemComponentId: string, componentId: string) => void;
+  onToggleLock?: (systemComponentId: string) => void;
 };
 
-export function PreviewTable({ slots, fixedSlots, selections }: PreviewTableProps) {
+export function PreviewTable({ slots, fixedSlots, selections, locked, onSelect, onToggleLock }: PreviewTableProps) {
   return (
     <div className="overflow-x-auto rounded-sm border border-border">
       <Table dense>
@@ -33,6 +39,7 @@ export function PreviewTable({ slots, fixedSlots, selections }: PreviewTableProp
               λ
             </TableHead>
             <TableHead numeric>Bill</TableHead>
+            {onToggleLock ? <TableHead className="w-10 text-right">Pin</TableHead> : null}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -50,11 +57,49 @@ export function PreviewTable({ slots, fixedSlots, selections }: PreviewTableProp
                   </span>
                 </TableCell>
                 <TableCell className="whitespace-normal text-foreground-muted">{now.vendorName}</TableCell>
-                <TableCell className={cn("whitespace-normal", changed ? "font-semibold text-primary" : "text-foreground-muted")}>
-                  {picked.vendorName}
+                <TableCell className="whitespace-normal">
+                  {onSelect ? (
+                    <Select value={picked.componentId} onValueChange={(next) => onSelect(slot.systemComponentId, next)}>
+                      <SelectTrigger
+                        size="sm"
+                        aria-label={`Vendor for ${slot.componentName}`}
+                        className={cn("w-full min-w-36", changed && "font-semibold text-primary")}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {slot.candidates.map((candidate) => (
+                          <SelectItem key={candidate.componentId} value={candidate.componentId}>
+                            {candidate.vendorName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span className={cn(changed ? "font-semibold text-primary" : "text-foreground-muted")}>{picked.vendorName}</span>
+                  )}
                 </TableCell>
                 <TableCell numeric>{formatFailureRate(picked.failureRate)}</TableCell>
                 <TableCell numeric>{formatMoney(picked.unitCost * slot.units)}</TableCell>
+                {onToggleLock ? (
+                  <TableCell className="text-right">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-pressed={locked?.has(slot.systemComponentId) ?? false}
+                      aria-label={
+                        locked?.has(slot.systemComponentId)
+                          ? `Unpin the vendor for ${slot.componentName}`
+                          : `Pin the vendor for ${slot.componentName}`
+                      }
+                      onClick={() => onToggleLock(slot.systemComponentId)}
+                      className={cn(locked?.has(slot.systemComponentId) && "text-primary")}
+                    >
+                      {locked?.has(slot.systemComponentId) ? <Lock /> : <LockOpen />}
+                    </Button>
+                  </TableCell>
+                ) : null}
               </TableRow>
             );
           })}
@@ -68,6 +113,7 @@ export function PreviewTable({ slots, fixedSlots, selections }: PreviewTableProp
                 {fixed.reason}
               </TableCell>
               <TableCell numeric>{fixed.cost > 0 ? formatMoney(fixed.cost) : "—"}</TableCell>
+              {onToggleLock ? <TableCell /> : null}
             </TableRow>
           ))}
         </TableBody>
