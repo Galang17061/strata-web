@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { runOptimizationPreview, scoreOptimizationChoices } from "@/features/optimization/api";
+import { ConvergenceChart } from "@/features/optimization/convergence-chart";
 import { PreviewTable } from "@/features/optimization/preview-table";
 import { choicesOf, hasManualChanges, locksOf } from "@/features/optimization/selection";
 import type {
@@ -363,6 +364,7 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
               onSelect={selectVendor}
               onToggleLock={toggleLock}
             />
+            <ConvergenceChart history={preview.history ?? []} />
             {problem ? (
               <p role="alert" className="rounded-sm bg-danger/10 px-3 py-2 text-body-sm text-danger">
                 {problem}
