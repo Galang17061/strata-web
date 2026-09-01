@@ -3,6 +3,9 @@
 import { Coins, Gauge, Scale } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import type { OptimizationMode, OptimizationSettings } from "@/features/optimization/types";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +65,98 @@ function ModeCards({ value, onChange }: { value: OptimizationMode; onChange: (mo
   );
 }
 
+export function settingsProblem(settings: OptimizationSettings): string | null {
+  const budget = Number(settings.maxBudget);
+  const target = Number(settings.targetReliability);
+  if (settings.mode !== 1) {
+    if (!settings.maxBudget || !Number.isFinite(budget) || budget <= 0) return "Give the search a budget ceiling above zero.";
+  }
+  if (settings.mode === 3) {
+    if (!settings.targetReliability || !Number.isFinite(target) || target <= 0 || target > 1) {
+      return "The reliability floor must sit between 0 and 1.";
+    }
+  }
+  return null;
+}
+
+function ConstraintFields({
+  settings,
+  onChange,
+}: {
+  settings: OptimizationSettings;
+  onChange: (patch: Partial<OptimizationSettings>) => void;
+}) {
+  if (settings.mode === 1) {
+    return (
+      <p className="text-caption text-foreground-muted normal-case tracking-normal">
+        No limits: the search only chases the chance of working. The bill is reported, never enforced.
+      </p>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="optimize-budget">Budget ceiling</Label>
+          <div className="relative">
+            <Input
+              id="optimize-budget"
+              numeric
+              value={settings.maxBudget}
+              onChange={(event) => onChange({ maxBudget: event.target.value.replace(/[^\d.]/g, "") })}
+              className="pr-12"
+              placeholder="2666000000"
+            />
+            <span className="pointer-events-none absolute inset-y-0 right-3 inline-flex items-center font-mono text-caption tracking-normal text-foreground-subtle">
+              B
+            </span>
+          </div>
+        </div>
+        {settings.mode === 3 ? (
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="optimize-target">Reliability floor</Label>
+            <div className="relative">
+              <Input
+                id="optimize-target"
+                numeric
+                value={settings.targetReliability}
+                onChange={(event) => onChange({ targetReliability: event.target.value.replace(/[^\d.]/g, "") })}
+                className="pr-12"
+                placeholder="0.844"
+              />
+              <span className="pointer-events-none absolute inset-y-0 right-3 inline-flex items-center font-mono text-caption tracking-normal text-foreground-subtle">
+                RT
+              </span>
+            </div>
+          </div>
+        ) : null}
+      </div>
+      {settings.mode === 3 ? (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="optimize-weights">Cost against reliability</Label>
+            <span className="font-mono text-numeric text-foreground">
+              w1 {settings.weightCost.toFixed(2)} · w2 {(1 - settings.weightCost).toFixed(2)}
+            </span>
+          </div>
+          <Slider
+            id="optimize-weights"
+            min={0.05}
+            max={0.95}
+            step={0.05}
+            value={[settings.weightCost]}
+            onValueChange={(next) => onChange({ weightCost: next[0] ?? 0.9 })}
+            aria-label="Weight given to cost"
+          />
+          <p className="text-caption text-foreground-muted normal-case tracking-normal">
+            The two weights always add up to one. The research default leans on cost at 0.90.
+          </p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName }: OptimizationStudioProps) {
   const [settings, setSettings] = useState<OptimizationSettings>(defaultSettings);
 
@@ -76,9 +171,7 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
         </DialogHeader>
         <div className="flex flex-1 flex-col gap-5 overflow-y-auto pr-1">
           <ModeCards value={settings.mode} onChange={(mode) => setSettings((current) => ({ ...current, mode }))} />
-          <p className="rounded-sm border border-border bg-surface-sunken px-3 py-6 text-center text-body-sm text-foreground-muted">
-            Set the limits for this goal, then run the search.
-          </p>
+          <ConstraintFields settings={settings} onChange={(patch) => setSettings((current) => ({ ...current, ...patch }))} />
         </div>
       </DialogContent>
     </Dialog>
