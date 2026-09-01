@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { runOptimizationPreview } from "@/features/optimization/api";
+import { PreviewTable } from "@/features/optimization/preview-table";
 import type {
   OptimizationChoice,
   OptimizationMode,
@@ -317,6 +318,7 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
                 <p className="text-caption text-foreground-muted normal-case tracking-normal">now {formatMoney(preview.totals.baselineCost)}</p>
               </div>
             </div>
+            <PreviewTable slots={preview.slots} fixedSlots={preview.fixedSlots} selections={{}} />
             <div className="flex items-center justify-end gap-2">
               <Button variant="secondary" size="sm" loading={run.isPending} onClick={() => startRun([])}>
                 <Play /> Run again
