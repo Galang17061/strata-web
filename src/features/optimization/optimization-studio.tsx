@@ -4,6 +4,9 @@ import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, ChevronDown, Coins, Gauge, Play, Scale } from "lucide-react";
 import { useState } from "react";
 import { StrataLoader } from "@/components/brand/loader";
+import { CountUp } from "@/components/motion/count-up";
+import { ReliabilityBadge } from "@/components/reliability/reliability-badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -341,18 +344,44 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
               <span className="text-caption text-foreground-muted normal-case tracking-normal">
                 {preview.generations} generations · {preview.executionMs} ms · seed {preview.seed}
               </span>
+              <span className="ml-auto">
+                {settings.mode === 1 ? null : preview.feasible ? (
+                  <Badge variant="success">Inside the limits</Badge>
+                ) : (
+                  <Badge variant="danger">Breaks the limits</Badge>
+                )}
+              </span>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-sm border border-border bg-surface-sunken px-4 py-3">
-                <p className="text-caption uppercase text-foreground-muted">Chance it works</p>
-                <p className="font-mono text-numeric-lg text-foreground">{formatReliability(totals?.reliability, 8)}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-caption uppercase text-foreground-muted">Chance it works</p>
+                  <ReliabilityBadge value={totals?.reliability ?? null} size="sm" />
+                </div>
+                {totals ? (
+                  <CountUp
+                    key={totals.reliability}
+                    value={totals.reliability}
+                    format={(value) => formatReliability(value, 8)}
+                    immediate
+                    className="font-mono text-numeric-lg text-foreground"
+                  />
+                ) : null}
                 <p className="text-caption text-foreground-muted normal-case tracking-normal">
                   now {formatReliability(totals?.baselineReliability, 8)}
                 </p>
               </div>
               <div className="rounded-sm border border-border bg-surface-sunken px-4 py-3">
                 <p className="text-caption uppercase text-foreground-muted">Bill for the parts</p>
-                <p className="font-mono text-numeric-lg text-foreground">{formatMoney(totals?.cost)}</p>
+                {totals ? (
+                  <CountUp
+                    key={totals.cost}
+                    value={totals.cost}
+                    format={(value) => formatMoney(value)}
+                    immediate
+                    className="font-mono text-numeric-lg text-foreground"
+                  />
+                ) : null}
                 <p className="text-caption text-foreground-muted normal-case tracking-normal">now {formatMoney(totals?.baselineCost)}</p>
               </div>
             </div>
