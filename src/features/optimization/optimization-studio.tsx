@@ -1,8 +1,10 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, ChevronDown, Coins, Gauge, Play, Scale } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Check, ChevronDown, Coins, Gauge, Play, Scale } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { StrataLoader } from "@/components/brand/loader";
 import { CountUp } from "@/components/motion/count-up";
 import { ReliabilityBadge } from "@/components/reliability/reliability-badge";
@@ -12,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { runOptimizationPreview, scoreOptimizationChoices } from "@/features/optimization/api";
+import { applyOptimization, runOptimizationPreview, scoreOptimizationChoices } from "@/features/optimization/api";
 import { ConvergenceChart } from "@/features/optimization/convergence-chart";
 import { PreviewTable } from "@/features/optimization/preview-table";
 import { choicesOf, hasManualChanges, locksOf } from "@/features/optimization/selection";
@@ -24,6 +26,7 @@ import type {
   OptimizationSettings,
 } from "@/features/optimization/types";
 import { formatMoney, formatReliability } from "@/lib/format";
+import { queryKeys } from "@/lib/query-keys";
 import { cn } from "@/lib/utils";
 
 type OptimizationStudioProps = {
@@ -251,7 +254,12 @@ function AdvancedSettings({
 }
 
 export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName }: OptimizationStudioProps) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [settings, setSettings] = useState<OptimizationSettings>(defaultSettings);
+  const [applyOpen, setApplyOpen] = useState(false);
+  const [projectName, setProjectName] = useState("");
+  const [newSystemName, setNewSystemName] = useState("");
   const [preview, setPreview] = useState<OptimizationPreview | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [selections, setSelections] = useState<Record<string, string>>({});
@@ -285,6 +293,39 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
       setScoredTotals(null);
     }
   };
+
+  const apply = useMutation({
+    mutationFn: () => {
+      if (!preview) return Promise.reject(new Error("Run the search first."));
+      const base = toPreviewInput(rbdSystemId, settings, []);
+      return applyOptimization({
+        rbdSystemId,
+        projectName: projectName.trim(),
+        systemName: newSystemName.trim() || undefined,
+        choices: choicesOf(preview.slots, selections),
+        mode: settings.mode,
+        maxBudget: base.maxBudget,
+        targetReliability: base.targetReliability,
+        weightCost: base.weightCost,
+        weightReliability: base.weightReliability,
+        populationSize: base.populationSize,
+        maxGenerations: base.maxGenerations,
+        crossoverProbability: base.crossoverProbability,
+        mutationProbability: base.mutationProbability,
+        seed: preview.seed,
+      });
+    },
+    onSuccess: async (envelope) => {
+      await queryClient.invalidateQueries({ queryKey: ["projects"] });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.systems.all });
+      toast.success("Optimised copy created", { description: `Project ${projectName.trim()} now holds the new line-up.` });
+      setApplyOpen(false);
+      onOpenChange(false);
+      reset();
+      router.push(`/workspace/?project=${encodeURIComponent(envelope.data.projectId)}&system=${encodeURIComponent(envelope.data.rbdSystemId)}`);
+    },
+    onError: (error) => toast.error("Could not create the copy", { description: error.message }),
+  });
 
   const toggleLock = (systemComponentId: string) => {
     setLocked((current) => {
@@ -403,7 +444,58 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
               <Button variant="secondary" size="sm" loading={run.isPending} onClick={() => startRun(locksOf(preview.slots, selections, locked))}>
                 <Play /> Run again{locked.size > 0 ? ` with ${locked.size} pinned` : ""}
               </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setProjectName("");
+                  setNewSystemName(`${systemName ?? rbdSystemId} (optimized)`);
+                  setApplyOpen(true);
+                }}
+              >
+                <Check /> Use this line-up
+              </Button>
             </div>
+            <Dialog open={applyOpen} onOpenChange={setApplyOpen}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Keep this line-up</DialogTitle>
+                  <DialogDescription>
+                    A new project will hold a full copy of this system with the chosen vendors. The original drawing stays untouched.
+                  </DialogDescription>
+                </DialogHeader>
+                <form
+                  className="flex flex-col gap-4"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    if (!projectName.trim()) return;
+                    apply.mutate();
+                  }}
+                >
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="apply-project-name">Project name</Label>
+                    <Input
+                      id="apply-project-name"
+                      value={projectName}
+                      onChange={(event) => setProjectName(event.target.value)}
+                      placeholder="Propulsion study 2027"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="apply-system-name">System name</Label>
+                    <Input id="apply-system-name" value={newSystemName} onChange={(event) => setNewSystemName(event.target.value)} />
+                  </div>
+                  <div className="flex items-center justify-end gap-2">
+                    <Button type="button" variant="secondary" onClick={() => setApplyOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" loading={apply.isPending} disabled={!projectName.trim()}>
+                      Create the project
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         ) : (
           <div className="flex flex-1 flex-col gap-5 overflow-y-auto pr-1">
