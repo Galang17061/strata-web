@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Info, PanelLeft, PanelRight, RefreshCw, Save } from "lucide-react";
+import { Info, PanelLeft, PanelRight, RefreshCw, Save, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/brand/empty-state";
@@ -37,6 +37,7 @@ import { RbdCanvas } from "@/features/workspace/canvas/canvas";
 import { ComponentSheet } from "@/features/workspace/component-sheet";
 import { ContextPanel } from "@/features/workspace/context-panel";
 import { AddComponentDialog, HierarchyDialog } from "@/features/workspace/dialogs";
+import { OptimizationStudio } from "@/features/optimization/optimization-studio";
 import { PlotDialog } from "@/features/workspace/plot/plot-dialog";
 import { RecalculateDialog } from "@/features/workspace/recalculate-dialog";
 import {
@@ -125,6 +126,7 @@ export function WorkspaceScreen() {
   const [componentDialog, setComponentDialog] = useState<TreeNode | null>(null);
   const [pendingDelete, setPendingDelete] = useState<TreeAction | null>(null);
   const [recalculateOpen, setRecalculateOpen] = useState(false);
+  const [optimizeOpen, setOptimizeOpen] = useState(false);
   const [plotOpen, setPlotOpen] = useState(false);
   const [recalculating, setRecalculating] = useState(false);
   const [treeWidth, setTreeWidth] = useState(280);
@@ -414,6 +416,9 @@ export function WorkspaceScreen() {
         <div className="ml-auto flex items-center gap-2">
           {dirty ? <span className="text-caption text-warning normal-case tracking-normal">Unsaved changes</span> : null}
           <PermissionGate moduleName={MODULES.DESIGN_FOR_RELIABILITY} permission="update">
+            <Button size="sm" variant="secondary" onClick={() => setOptimizeOpen(true)} disabled={dirty}>
+              <Sparkles /> Optimize
+            </Button>
             <Button size="sm" variant="secondary" onClick={() => setRecalculateOpen(true)} loading={recalculating} disabled={dirty}>
               <RefreshCw /> Recalculate
             </Button>
@@ -502,6 +507,7 @@ export function WorkspaceScreen() {
       </Sheet>
 
       <PlotDialog open={plotOpen} onOpenChange={setPlotOpen} tree={treeData} level={activeLevel} />
+      <OptimizationStudio open={optimizeOpen} onOpenChange={setOptimizeOpen} rbdSystemId={rbdSystemId} systemName={treeData?.systemName ?? null} />
       <RecalculateDialog
         open={recalculateOpen}
         onOpenChange={setRecalculateOpen}
