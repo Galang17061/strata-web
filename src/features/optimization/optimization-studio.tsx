@@ -1,6 +1,6 @@
 "use client";
 
-import { Coins, Gauge, Scale } from "lucide-react";
+import { ChevronDown, Coins, Gauge, Scale } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -157,6 +157,61 @@ function ConstraintFields({
   );
 }
 
+function AdvancedField({
+  id,
+  label,
+  value,
+  onChange,
+  hint,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  hint: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <Input id={id} numeric value={value} onChange={(event) => onChange(event.target.value.replace(/[^\d.]/g, ""))} placeholder={hint} />
+    </div>
+  );
+}
+
+function AdvancedSettings({
+  settings,
+  onChange,
+}: {
+  settings: OptimizationSettings;
+  onChange: (patch: Partial<OptimizationSettings>) => void;
+}) {
+  const [openAdvanced, setOpenAdvanced] = useState(false);
+  return (
+    <div className="flex flex-col gap-3 rounded-sm border border-border bg-surface-sunken p-3">
+      <button
+        type="button"
+        aria-expanded={openAdvanced}
+        onClick={() => setOpenAdvanced((current) => !current)}
+        className="flex items-center justify-between gap-2 rounded-sm text-left text-caption uppercase text-foreground-muted outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        How the search breeds its answers
+        <ChevronDown className={cn("size-4 transition-transform duration-(--dur-fast)", openAdvanced && "rotate-180")} aria-hidden="true" />
+      </button>
+      {openAdvanced ? (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <AdvancedField id="optimize-population" label="Population" value={settings.populationSize} onChange={(value) => onChange({ populationSize: value })} hint="700" />
+            <AdvancedField id="optimize-generations" label="Generations" value={settings.maxGenerations} onChange={(value) => onChange({ maxGenerations: value })} hint="1500" />
+            <AdvancedField id="optimize-crossover" label="Crossover" value={settings.crossoverProbability} onChange={(value) => onChange({ crossoverProbability: value })} hint="0.9" />
+            <AdvancedField id="optimize-mutation" label="Mutation" value={settings.mutationProbability} onChange={(value) => onChange({ mutationProbability: value })} hint="0.4" />
+          </div>
+          <AdvancedField id="optimize-seed" label="Seed (repeat a run exactly)" value={settings.seed} onChange={(value) => onChange({ seed: value })} hint="leave empty for a fresh roll" />
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName }: OptimizationStudioProps) {
   const [settings, setSettings] = useState<OptimizationSettings>(defaultSettings);
 
@@ -172,6 +227,7 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
         <div className="flex flex-1 flex-col gap-5 overflow-y-auto pr-1">
           <ModeCards value={settings.mode} onChange={(mode) => setSettings((current) => ({ ...current, mode }))} />
           <ConstraintFields settings={settings} onChange={(patch) => setSettings((current) => ({ ...current, ...patch }))} />
+          <AdvancedSettings settings={settings} onChange={(patch) => setSettings((current) => ({ ...current, ...patch }))} />
         </div>
       </DialogContent>
     </Dialog>
