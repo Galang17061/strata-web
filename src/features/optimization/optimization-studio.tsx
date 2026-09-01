@@ -1,12 +1,23 @@
 "use client";
 
-import { ChevronDown, Coins, Gauge, Scale } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { ArrowLeft, ChevronDown, Coins, Gauge, Play, Scale } from "lucide-react";
 import { useState } from "react";
+import { StrataLoader } from "@/components/brand/loader";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import type { OptimizationMode, OptimizationSettings } from "@/features/optimization/types";
+import { runOptimizationPreview } from "@/features/optimization/api";
+import type {
+  OptimizationChoice,
+  OptimizationMode,
+  OptimizationPreview,
+  OptimizationPreviewInput,
+  OptimizationSettings,
+} from "@/features/optimization/types";
+import { formatMoney, formatReliability } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type OptimizationStudioProps = {
@@ -63,6 +74,27 @@ function ModeCards({ value, onChange }: { value: OptimizationMode; onChange: (mo
       })}
     </div>
   );
+}
+
+export function toPreviewInput(rbdSystemId: string, settings: OptimizationSettings, locks: OptimizationChoice[]): OptimizationPreviewInput {
+  const numberOr = (text: string) => {
+    const value = Number(text);
+    return text !== "" && Number.isFinite(value) && value > 0 ? value : undefined;
+  };
+  return {
+    rbdSystemId,
+    mode: settings.mode,
+    maxBudget: settings.mode === 1 ? undefined : numberOr(settings.maxBudget),
+    targetReliability: settings.mode === 3 ? numberOr(settings.targetReliability) : undefined,
+    weightCost: settings.mode === 3 ? settings.weightCost : undefined,
+    weightReliability: settings.mode === 3 ? Number((1 - settings.weightCost).toFixed(4)) : undefined,
+    populationSize: numberOr(settings.populationSize),
+    maxGenerations: numberOr(settings.maxGenerations),
+    crossoverProbability: numberOr(settings.crossoverProbability),
+    mutationProbability: numberOr(settings.mutationProbability),
+    seed: numberOr(settings.seed),
+    locks: locks.length > 0 ? locks : undefined,
+  };
 }
 
 export function settingsProblem(settings: OptimizationSettings): string | null {
@@ -214,9 +246,41 @@ function AdvancedSettings({
 
 export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName }: OptimizationStudioProps) {
   const [settings, setSettings] = useState<OptimizationSettings>(defaultSettings);
+  const [preview, setPreview] = useState<OptimizationPreview | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
+
+  const run = useMutation({
+    mutationFn: (locks: OptimizationChoice[]) => runOptimizationPreview(toPreviewInput(rbdSystemId, settings, locks)),
+    onSuccess: (envelope) => {
+      setPreview(envelope.data);
+      setProblem(null);
+    },
+    onError: (error) => setProblem(error.message),
+  });
+
+  const startRun = (locks: OptimizationChoice[]) => {
+    const message = settingsProblem(settings);
+    if (message) {
+      setProblem(message);
+      return;
+    }
+    setProblem(null);
+    run.mutate(locks);
+  };
+
+  const reset = () => {
+    setPreview(null);
+    setProblem(null);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        onOpenChange(next);
+        if (!next) reset();
+      }}
+    >
       <DialogContent className="flex max-h-[90dvh] w-full flex-col overflow-hidden sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Optimize {systemName ?? rbdSystemId}</DialogTitle>
@@ -224,11 +288,58 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
             Let an evolving search shop the master data for a better vendor behind every part, without touching this drawing.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-1 flex-col gap-5 overflow-y-auto pr-1">
-          <ModeCards value={settings.mode} onChange={(mode) => setSettings((current) => ({ ...current, mode }))} />
-          <ConstraintFields settings={settings} onChange={(patch) => setSettings((current) => ({ ...current, ...patch }))} />
-          <AdvancedSettings settings={settings} onChange={(patch) => setSettings((current) => ({ ...current, ...patch }))} />
-        </div>
+        {run.isPending ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16">
+            <StrataLoader size="md" label="Breeding vendor line-ups" />
+            <p className="text-body-sm text-foreground-muted">Breeding vendor line-ups against your limits…</p>
+          </div>
+        ) : preview ? (
+          <div className="flex flex-1 flex-col gap-4 overflow-y-auto pr-1">
+            <div className="flex flex-wrap items-center gap-3">
+              <Button variant="ghost" size="sm" onClick={reset}>
+                <ArrowLeft /> Change the goal
+              </Button>
+              <span className="text-caption text-foreground-muted normal-case tracking-normal">
+                {preview.generations} generations · {preview.executionMs} ms · seed {preview.seed}
+              </span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-sm border border-border bg-surface-sunken px-4 py-3">
+                <p className="text-caption uppercase text-foreground-muted">Chance it works</p>
+                <p className="font-mono text-numeric-lg text-foreground">{formatReliability(preview.totals.reliability, 8)}</p>
+                <p className="text-caption text-foreground-muted normal-case tracking-normal">
+                  now {formatReliability(preview.totals.baselineReliability, 8)}
+                </p>
+              </div>
+              <div className="rounded-sm border border-border bg-surface-sunken px-4 py-3">
+                <p className="text-caption uppercase text-foreground-muted">Bill for the parts</p>
+                <p className="font-mono text-numeric-lg text-foreground">{formatMoney(preview.totals.cost)}</p>
+                <p className="text-caption text-foreground-muted normal-case tracking-normal">now {formatMoney(preview.totals.baselineCost)}</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <Button variant="secondary" size="sm" loading={run.isPending} onClick={() => startRun([])}>
+                <Play /> Run again
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-1 flex-col gap-5 overflow-y-auto pr-1">
+            <ModeCards value={settings.mode} onChange={(mode) => setSettings((current) => ({ ...current, mode }))} />
+            <ConstraintFields settings={settings} onChange={(patch) => setSettings((current) => ({ ...current, ...patch }))} />
+            <AdvancedSettings settings={settings} onChange={(patch) => setSettings((current) => ({ ...current, ...patch }))} />
+            {problem ? (
+              <p role="alert" className="rounded-sm bg-danger/10 px-3 py-2 text-body-sm text-danger">
+                {problem}
+              </p>
+            ) : null}
+            <div className="flex items-center justify-end">
+              <Button onClick={() => startRun([])} loading={run.isPending}>
+                <Play /> Run the search
+              </Button>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
