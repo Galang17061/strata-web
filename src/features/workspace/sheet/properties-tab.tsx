@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { PulseValue } from "@/components/reliability/reliability-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InfoHint } from "@/components/ui/info-hint";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,6 +33,49 @@ const distributionCopy: Record<Distribution, { label: string; hint: string }> = 
   exponential: { label: "Exponential", hint: "A constant failure rate λ. R(t) = e^(-λt)." },
   weibull: { label: "Weibull", hint: "Shape β and scale η fitted from the failure log. R(t) = e^(-(t/η)^β)." },
   poisson: { label: "Poisson", hint: "Counts faults at rate λ and tolerates up to c of them. R(t) = Σ e^(-λt)(λt)^k/k!." },
+};
+
+const distributionStory: Record<Distribution, React.ReactNode> = {
+  exponential: (
+    <>
+      <p>
+        For a part that neither ages nor improves: every running hour carries the same
+        risk, no matter how old the part is. One number describes it — the failure rate λ,
+        failures per hour.
+      </p>
+      <p>
+        The chance of still working after t hours is R(t) = e^(-λt). This is the usual
+        starting point when all you have is the vendor&apos;s quoted rate.
+      </p>
+    </>
+  ),
+  weibull: (
+    <>
+      <p>
+        For a part whose risk changes with age. Two numbers describe it, both learned from
+        the failure log. The shape β says how the part lives: below 1, failures come early
+        and the survivors get safer; near 1, failures are random like Exponential; above
+        1, the part wears out and risk grows with age.
+      </p>
+      <p>
+        The scale η is its characteristic life in hours — by that age about 63% of such
+        parts have failed. Together: R(t) = e^(-(t/η)^β).
+      </p>
+    </>
+  ),
+  poisson: (
+    <>
+      <p>
+        For a part that can take a few faults before it counts as down — think of
+        something repairable or self-recovering. Faults arrive at rate λ, and the part
+        survives as long as no more than c of them have happened.
+      </p>
+      <p>
+        R(t) adds up the chances of 0, 1, … up to c faults. With c = 0 it collapses to
+        plain Exponential.
+      </p>
+    </>
+  ),
 };
 
 const wiringCopy: Record<Wiring, { label: string; hint: string }> = {
@@ -265,7 +309,12 @@ export function PropertiesTab({ systemComponentId, canEdit }: PropertiesTabProps
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="component-distribution">Distribution</Label>
+        <div className="flex items-center gap-1">
+          <Label htmlFor="component-distribution">Distribution</Label>
+          <InfoHint label={distributionCopy[form.distribution].label}>
+            {distributionStory[form.distribution]}
+          </InfoHint>
+        </div>
         <Select value={form.distribution} onValueChange={(value) => update({ distribution: value as Distribution })} disabled={!canEdit}>
           <SelectTrigger id="component-distribution" className="w-full">
             <SelectValue />
