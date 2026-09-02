@@ -32,10 +32,10 @@ export function LandingNav() {
         </Link>
         <div className="flex items-center gap-1 sm:gap-2">
           <Button asChild variant="ghost" className="hidden sm:inline-flex">
-            <a href="#how-it-works">How it works</a>
+            <Link href="/#how-it-works">How it works</Link>
           </Button>
           <Button asChild variant="ghost" className="hidden sm:inline-flex">
-            <a href="#features">Features</a>
+            <Link href="/#features">Features</Link>
           </Button>
           <ThemeToggle className="hidden md:inline-flex" />
           <Button asChild>
