@@ -1,8 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { FileSpreadsheet, Printer } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { utils, writeFile } from "xlsx";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Wordmark } from "@/components/brand/wordmark";
 import { getSystemTree } from "@/features/projects/api";
@@ -25,6 +28,53 @@ function figureText(value: number | null): string {
 function wiringText(connectionType: string | null): string {
   if (!connectionType) return "series";
   return connectionType.toLowerCase() === "partial" ? "k out of n" : connectionType.toLowerCase();
+}
+
+type LayerRow = {
+  Level: number;
+  Block: string;
+  Wiring: string;
+  Reliability: number | string;
+};
+
+type ComponentRow = {
+  Level: number;
+  Block: string;
+  Component: string;
+  Vendor: string;
+  Wiring: string;
+  Units: string;
+  Reliability: number | string;
+};
+
+export function reportRows(
+  nodes: TreeNode[],
+  figures: SystemTotal | null,
+): { layers: LayerRow[]; components: ComponentRow[] } {
+  const layers: LayerRow[] = [];
+  const components: ComponentRow[] = [];
+  const walk = (node: TreeNode) => {
+    layers.push({
+      Level: node.level,
+      Block: node.name,
+      Wiring: wiringText(node.connectionType),
+      Reliability: reliabilityOf(figures?.hierarchyLookup, node.formulaCode) ?? "",
+    });
+    for (const component of node.components ?? []) {
+      components.push({
+        Level: node.level,
+        Block: node.name,
+        Component: component.componentName ?? "",
+        Vendor: component.vendorName ?? "",
+        Wiring: wiringText(component.connectionType),
+        Units: `${component.activeComponent ?? 1}/${component.totalComponent ?? 1}`,
+        Reliability: reliabilityOf(figures?.componentLookup, component.formulaCode) ?? "",
+      });
+    }
+    for (const child of node.hierarchy ?? []) walk(child);
+  };
+  for (const node of nodes) walk(node);
+  return { layers, components };
 }
 
 function BlockSection({ node, figures }: { node: TreeNode; figures: SystemTotal | null }) {
@@ -101,8 +151,33 @@ export function ReportScreen() {
   const data = tree.data?.data ?? null;
   const figures = totals.data?.data ?? null;
 
+  const downloadExcel = () => {
+    if (!data) return;
+    const { layers, components } = reportRows(data.hierarchy ?? [], figures);
+    const book = utils.book_new();
+    const summary = [
+      { Field: "Project", Value: data.projectName },
+      { Field: "System", Value: data.systemName },
+      { Field: "System reliability", Value: figures?.reliabilityTotal ?? "" },
+      { Field: "Hierarchy depth", Value: data.hierarchyDepth },
+      { Field: "Drawn up", Value: new Date().toISOString().slice(0, 10) },
+    ];
+    utils.book_append_sheet(book, utils.json_to_sheet(summary), "Summary");
+    utils.book_append_sheet(book, utils.json_to_sheet(layers), "Layers");
+    utils.book_append_sheet(book, utils.json_to_sheet(components), "Components");
+    writeFile(book, `${data.systemName} reliability report.xlsx`);
+  };
+
   return (
     <main className="mx-auto w-full max-w-4xl px-8 py-12">
+      <div className="mb-6 flex items-center justify-end gap-2 print:hidden">
+        <Button variant="secondary" size="sm" onClick={downloadExcel} disabled={!data}>
+          <FileSpreadsheet /> Download Excel
+        </Button>
+        <Button size="sm" onClick={() => window.print()} disabled={!data}>
+          <Printer /> Print or save as PDF
+        </Button>
+      </div>
       <header className="flex items-start justify-between gap-6 border-b border-border pb-6">
         <div className="flex flex-col gap-1">
           <Wordmark size={24} />
@@ -141,7 +216,7 @@ export function ReportScreen() {
       <p className="mt-10 border-t border-border pt-4 text-caption text-foreground-muted">
         Figures are the stored results of the latest recalculation, to eight decimal places.
       </p>
-      <p className="mt-4 text-body-sm text-foreground-muted">
+      <p className="mt-4 text-body-sm text-foreground-muted print:hidden">
         <Link href="/dashboard/" className="rounded-sm underline underline-offset-4 hover:text-foreground">
           Back to the app
         </Link>
