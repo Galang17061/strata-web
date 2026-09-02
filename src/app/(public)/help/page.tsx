@@ -110,6 +110,30 @@ export default function HelpPage() {
                 from the conclusion.
               </p>
             </section>
+            <section id="studio" className="mt-12 scroll-mt-24">
+              <h2 className="text-h2">The optimization studio</h2>
+              <p className="mt-3 text-body text-foreground-muted">
+                Which vendor should supply every single part at once? Checking each
+                combination by hand would take forever, so Strata borrows a trick from
+                nature: a genetic search. It starts with a crowd of random shopping lists,
+                keeps the strongest, mixes them together and lets small mutations creep
+                in, round after round, until one line-up clearly wins. Every candidate is
+                scored against your real diagram — the wiring, the redundancy and the
+                layers all count — never against a simplified copy.
+              </p>
+              <p className="mt-3 text-body text-foreground-muted">
+                You steer it with three modes: pure reliability, reliability under a
+                budget cap, or a balance of budget and a reliability floor. The result is
+                a preview, not a decision: every slot shows the current vendor beside the
+                proposed one with the change in failure rate, cost and reliability.
+                Disagree with a row? Re-pick it, pin it, and run again — pinned choices
+                become fixed genes. Only parts with at least two priced, compatible
+                candidates take part; everything else is honestly reported as the fixed
+                part of the total. When you are happy, Apply copies the whole system into
+                a brand-new project with the chosen vendors in place, so the original is
+                never touched.
+              </p>
+            </section>
           </div>
         </div>
       </main>
