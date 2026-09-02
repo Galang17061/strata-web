@@ -6,9 +6,73 @@ import { useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Wordmark } from "@/components/brand/wordmark";
 import { getSystemTree } from "@/features/projects/api";
+import type { TreeNode } from "@/features/projects/types";
 import { systemTotal } from "@/features/workspace/api";
+import type { SystemTotal } from "@/features/workspace/types";
 import { formatReliability } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
+
+export function reliabilityOf(lookup: Record<string, number> | null | undefined, code: string | null): number | null {
+  if (!lookup || !code) return null;
+  const value = lookup[code];
+  return typeof value === "number" ? value : null;
+}
+
+function figureText(value: number | null): string {
+  return value === null ? "—" : formatReliability(value, 8);
+}
+
+function wiringText(connectionType: string | null): string {
+  if (!connectionType) return "series";
+  return connectionType.toLowerCase() === "partial" ? "k out of n" : connectionType.toLowerCase();
+}
+
+function BlockSection({ node, figures }: { node: TreeNode; figures: SystemTotal | null }) {
+  return (
+    <section className="mt-6" style={{ marginLeft: `${Math.max(0, node.level - 1) * 20}px` }}>
+      <div className="flex items-baseline justify-between gap-4 border-b border-border pb-1">
+        <h2 className="text-h3">
+          {node.name}
+          <span className="ml-2 font-mono text-caption text-foreground-muted">
+            level {node.level} · {wiringText(node.connectionType)}
+          </span>
+        </h2>
+        <p className="font-mono text-body-sm">{figureText(reliabilityOf(figures?.hierarchyLookup, node.formulaCode))}</p>
+      </div>
+      {node.components && node.components.length > 0 ? (
+        <table className="mt-2 w-full border-collapse text-body-sm">
+          <thead>
+            <tr className="text-left text-caption uppercase text-foreground-muted">
+              <th className="py-1 pr-3 font-medium">Component</th>
+              <th className="py-1 pr-3 font-medium">Vendor</th>
+              <th className="py-1 pr-3 font-medium">Wiring</th>
+              <th className="py-1 pr-3 text-right font-medium">Units</th>
+              <th className="py-1 text-right font-medium">Reliability</th>
+            </tr>
+          </thead>
+          <tbody>
+            {node.components.map((component) => (
+              <tr key={component.systemComponentId} className="border-t border-border/60">
+                <td className="py-1 pr-3">{component.componentName ?? "—"}</td>
+                <td className="py-1 pr-3 text-foreground-muted">{component.vendorName ?? "—"}</td>
+                <td className="py-1 pr-3 text-foreground-muted">{wiringText(component.connectionType)}</td>
+                <td className="py-1 pr-3 text-right font-mono">
+                  {component.activeComponent ?? 1}/{component.totalComponent ?? 1}
+                </td>
+                <td className="py-1 text-right font-mono">
+                  {figureText(reliabilityOf(figures?.componentLookup, component.formulaCode))}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : null}
+      {(node.hierarchy ?? []).map((child) => (
+        <BlockSection key={child.hierarchyId} node={child} figures={figures} />
+      ))}
+    </section>
+  );
+}
 
 export function ReportScreen() {
   const rbdSystemId = useSearchParams().get("system") ?? "";
@@ -67,7 +131,17 @@ export function ReportScreen() {
           </p>
         </div>
       </header>
-      <p className="mt-8 text-body-sm text-foreground-muted">
+      {data ? (
+        (data.hierarchy ?? []).length > 0 ? (
+          (data.hierarchy ?? []).map((node) => <BlockSection key={node.hierarchyId} node={node} figures={figures} />)
+        ) : (
+          <p className="mt-8 text-body-sm text-foreground-muted">This system has no layers drawn yet.</p>
+        )
+      ) : null}
+      <p className="mt-10 border-t border-border pt-4 text-caption text-foreground-muted">
+        Figures are the stored results of the latest recalculation, to eight decimal places.
+      </p>
+      <p className="mt-4 text-body-sm text-foreground-muted">
         <Link href="/dashboard/" className="rounded-sm underline underline-offset-4 hover:text-foreground">
           Back to the app
         </Link>
