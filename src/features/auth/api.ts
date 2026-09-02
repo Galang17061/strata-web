@@ -18,3 +18,12 @@ export async function forgotPassword(email: string): Promise<string> {
   const response = await api.post<Envelope<null>>("/Auth/ForgotPassword", { email });
   return response.message;
 }
+
+export async function resetPassword(input: {
+  token: string;
+  passwordNew: string;
+  reconfirmPassword: string;
+}): Promise<string> {
+  const response = await api.post<Envelope<null>>("/Auth/ResetPassword", input);
+  return response.message;
+}
