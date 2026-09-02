@@ -104,7 +104,7 @@ export function ProjectDetailScreen() {
               </Button>
             </PermissionGate>
             <PermissionGate moduleName={MODULES.DESIGN_FOR_RELIABILITY} permission="create">
-              <Button onClick={() => setCreateOpen(true)}>
+              <Button onClick={() => setCreateOpen(true)} data-tour="new-system">
                 <Plus /> New system
               </Button>
             </PermissionGate>

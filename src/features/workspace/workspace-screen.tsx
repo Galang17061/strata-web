@@ -419,7 +419,14 @@ export function WorkspaceScreen() {
             <Button size="sm" variant="secondary" onClick={() => setOptimizeOpen(true)} disabled={dirty}>
               <Sparkles /> Optimize
             </Button>
-            <Button size="sm" variant="secondary" onClick={() => setRecalculateOpen(true)} loading={recalculating} disabled={dirty}>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setRecalculateOpen(true)}
+              loading={recalculating}
+              disabled={dirty}
+              data-tour="recalculate"
+            >
               <RefreshCw /> Recalculate
             </Button>
             <Button size="sm" onClick={() => save.mutate()} loading={save.isPending} disabled={!dirty || !canvas}>
@@ -438,7 +445,7 @@ export function WorkspaceScreen() {
         className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-[var(--tree-width)_minmax(0,1fr)_var(--details-width)]"
         style={{ "--tree-width": `${treeWidth}px`, "--details-width": `${detailsWidth}px` } as React.CSSProperties}
       >
-        <aside className="relative hidden min-h-0 border-r border-border bg-surface lg:block">
+        <aside data-tour="tree" className="relative hidden min-h-0 border-r border-border bg-surface lg:block">
           {panels}
           <div
             role="separator"
@@ -450,7 +457,7 @@ export function WorkspaceScreen() {
             className="absolute inset-y-0 -right-1 z-10 hidden w-2 cursor-col-resize transition-colors duration-(--dur-fast) hover:bg-primary/20 active:bg-primary/30 lg:block"
           />
         </aside>
-        <section className={cn("relative min-h-0", !canvas && "flex items-center justify-center")} aria-label="Canvas">
+        <section data-tour="canvas" className={cn("relative min-h-0", !canvas && "flex items-center justify-center")} aria-label="Canvas">
           {canvas ? (
             canvas.nodes.length === 0 ? (
               <EmptyState
@@ -477,7 +484,7 @@ export function WorkspaceScreen() {
             <RbdCanvas key="loading" nodes={emptyNodes} edges={emptyEdges} editable={false} onDirty={() => undefined} onSelect={() => undefined} onOpenLayer={() => undefined} onOpenComponent={() => undefined} onStateChange={onStateChange} />
           )}
         </section>
-        <aside className="relative hidden min-h-0 border-l border-border bg-surface lg:block">
+        <aside data-tour="details" className="relative hidden min-h-0 border-l border-border bg-surface lg:block">
           {details}
           <div
             role="separator"
