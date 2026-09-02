@@ -27,3 +27,24 @@ export async function resetPassword(input: {
   const response = await api.post<Envelope<null>>("/Auth/ResetPassword", input);
   return response.message;
 }
+
+export type InviteDetail = {
+  email: string;
+  roleName: string;
+};
+
+export async function inviteDetail(token: string): Promise<InviteDetail> {
+  const response = await api.get<Envelope<InviteDetail>>(`/User/Invite/${token}`, { silent: true });
+  return response.data;
+}
+
+export async function acceptInvite(input: {
+  token: string;
+  userName: string;
+  fullname: string;
+  password: string;
+  reconfirmPassword: string;
+}): Promise<string> {
+  const response = await api.post<Envelope<null>>("/User/AcceptInvite", input);
+  return response.message;
+}
