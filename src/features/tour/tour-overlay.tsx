@@ -101,7 +101,13 @@ export function TourOverlay() {
   const cardLeft = hole ? Math.min(Math.max(12, hole.left), window.innerWidth - 340) : window.innerWidth / 2 - 164;
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[80]" role="dialog" aria-modal="true" aria-label="Product tour">
+    <div
+      data-tour-overlay
+      className="pointer-events-none fixed inset-0 z-[80]"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Product tour"
+    >
       {hole ? (
         <>
           <div className={shade} style={{ top: 0, left: 0, right: 0, height: Math.max(0, hole.top) }} />

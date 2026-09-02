@@ -364,7 +364,12 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
         if (!next) reset();
       }}
     >
-      <DialogContent className="flex max-h-[90dvh] w-full flex-col overflow-hidden sm:max-w-4xl">
+      <DialogContent
+        className="flex max-h-[90dvh] w-full flex-col overflow-hidden sm:max-w-4xl"
+        onInteractOutside={(event) => {
+          if (event.target instanceof Element && event.target.closest("[data-tour-overlay]")) event.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Optimize {systemName ?? rbdSystemId}</DialogTitle>
           <DialogDescription>
