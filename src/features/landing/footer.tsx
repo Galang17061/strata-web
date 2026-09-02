@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Wordmark } from "@/components/brand/wordmark";
 import { swaggerUrl } from "@/lib/env";
 
@@ -11,6 +12,18 @@ export function LandingFooter() {
         <Wordmark size={24} />
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <span>Strata Web · Strata API</span>
+          <Link
+            href="/demo"
+            className="rounded-sm underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Demo
+          </Link>
+          <Link
+            href="/terms"
+            className="rounded-sm underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Terms
+          </Link>
           {swagger ? (
             <a
               href={swagger}
