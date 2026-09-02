@@ -12,7 +12,7 @@ import {
   type Permission,
   type UserRole,
 } from "@/features/auth/roles";
-import { useAuthStore, type SignOutReason } from "@/features/auth/store";
+import { rememberMe, useAuthStore, type SignOutReason } from "@/features/auth/store";
 import type { AuthUser, Credentials } from "@/features/auth/types";
 import { readCookie, removeCookie, writeCookie } from "@/lib/cookies";
 import { tokenCookieName } from "@/lib/env";
@@ -21,7 +21,7 @@ export const DASHBOARD_PATH = "/dashboard/";
 export const SIGN_IN_PATH = "/sign-in/";
 
 export function storeSession(user: AuthUser): void {
-  writeCookie(tokenCookieName(), user.token);
+  writeCookie(tokenCookieName(), user.token, rememberMe() ? 7 : null);
   const state = useAuthStore.getState();
   state.setSignOutReason(null);
   state.setUser(user);

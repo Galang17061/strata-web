@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DASHBOARD_PATH, useSession, useSignIn } from "@/features/auth/session";
+import { setRememberMe } from "@/features/auth/store";
 import { ApiError } from "@/lib/api/client";
 import { useMotionTokens } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -91,6 +92,7 @@ export function SignInScreen() {
           : null;
 
   const onSubmit = (values: FormValues) => {
+    setRememberMe(remember);
     signIn.mutate(values, {
       onSuccess: () => {
         if (next) router.replace(next);

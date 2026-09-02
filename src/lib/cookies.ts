@@ -8,11 +8,14 @@ export function readCookie(name: string): string | null {
   return found ? decodeURIComponent(found.slice(prefix.length)) : null;
 }
 
-export function writeCookie(name: string, value: string, days = 7): void {
+export function writeCookie(name: string, value: string, days: number | null = 7): void {
   if (typeof document === "undefined") return;
-  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+  const expires =
+    days === null
+      ? ""
+      : `; Expires=${new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString()}`;
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Expires=${expires}; Path=/; SameSite=Lax${secure}`;
+  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}${expires}; Path=/; SameSite=Lax${secure}`;
 }
 
 export function removeCookie(name: string): void {
