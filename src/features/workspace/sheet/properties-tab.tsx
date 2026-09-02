@@ -190,12 +190,25 @@ function UnitField({
   );
 }
 
-function ReadOnlyRow({ label, symbol, value, children }: { label: string; symbol: string; value: unknown; children: React.ReactNode }) {
+function ReadOnlyRow({
+  label,
+  symbol,
+  value,
+  children,
+  explainer,
+}: {
+  label: string;
+  symbol: string;
+  value: unknown;
+  children: React.ReactNode;
+  explainer?: React.ReactNode;
+}) {
   return (
     <div className="flex items-center justify-between gap-3 py-2">
-      <span className="flex min-w-0 flex-wrap items-baseline gap-x-2 text-caption uppercase text-foreground-muted">
+      <span className="flex min-w-0 flex-wrap items-center gap-x-2 text-caption uppercase text-foreground-muted">
         {label}
         <span className="font-mono text-foreground-subtle normal-case">{symbol}</span>
+        {explainer ? <InfoHint label={label}>{explainer}</InfoHint> : null}
       </span>
       <PulseValue value={value} className="shrink-0 font-mono text-numeric whitespace-nowrap text-foreground">
         {children}
@@ -210,21 +223,46 @@ export function FittedFigures({ detail }: { detail: ComponentDetail }) {
     <div className="flex flex-col gap-1">
       <p className="text-caption uppercase text-foreground-muted">Fitted from the failure log</p>
       <div className="divide-y divide-border rounded-sm border border-border bg-surface-sunken px-3">
-        <ReadOnlyRow label="Failure rate" symbol="λ" value={detail.failureRate}>
+        <ReadOnlyRow
+          label="Failure rate"
+          symbol="λ"
+          value={detail.failureRate}
+          explainer={<p>How often this part breaks: failures per running hour. Counted from the log as failures divided by total hours run. Smaller is better.</p>}
+        >
           {formatFailureRate(detail.failureRate)}
         </ReadOnlyRow>
-        <ReadOnlyRow label="Mean time between failures" symbol="MTBF" value={detail.mtbf}>
+        <ReadOnlyRow
+          label="Mean time between failures"
+          symbol="MTBF"
+          value={detail.mtbf}
+          explainer={<p>The average stretch of running hours between one breakdown and the next — the friendly face of λ, since MTBF = 1/λ. Bigger is better.</p>}
+        >
           {formatHours(detail.mtbf)}
         </ReadOnlyRow>
         {weibull ? (
           <>
-            <ReadOnlyRow label="Shape" symbol="β" value={detail.shapeParameter}>
+            <ReadOnlyRow
+              label="Shape"
+              symbol="β"
+              value={detail.shapeParameter}
+              explainer={<p>How this part lives. Below 1: failures come early, survivors get safer. Near 1: failures strike at random, age plays no part. Above 1: wear-out — the older it gets, the likelier it breaks.</p>}
+            >
               {formatReliability(detail.shapeParameter, 4)}
             </ReadOnlyRow>
-            <ReadOnlyRow label="Scale" symbol="η" value={detail.scaleParameter}>
+            <ReadOnlyRow
+              label="Scale"
+              symbol="η"
+              value={detail.scaleParameter}
+              explainer={<p>The characteristic life in running hours: by this age about 63% of such parts have failed. It sets where the reliability curve bends down.</p>}
+            >
               {formatHours(detail.scaleParameter)}
             </ReadOnlyRow>
-            <ReadOnlyRow label="Fit" symbol="R²" value={detail.regresi}>
+            <ReadOnlyRow
+              label="Fit"
+              symbol="R²"
+              value={detail.regresi}
+              explainer={<p>How well the fitted Weibull line matches your recorded failures, from 0 to 1. Close to 1 means the log genuinely behaves like the model; low values mean read the prediction with care.</p>}
+            >
               {formatReliability(detail.regresi, 4)}
             </ReadOnlyRow>
           </>
