@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Info, PanelLeft, PanelRight, RefreshCw, Save, Sparkles } from "lucide-react";
+import { FileText, Info, PanelLeft, PanelRight, RefreshCw, Save, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/brand/empty-state";
@@ -416,6 +416,11 @@ export function WorkspaceScreen() {
         <div className="ml-auto flex items-center gap-2">
           {dirty ? <span className="text-caption text-warning normal-case tracking-normal">Unsaved changes</span> : null}
           <PermissionGate moduleName={MODULES.DESIGN_FOR_RELIABILITY} permission="update">
+            <Button size="sm" variant="secondary" asChild>
+              <a href={`/report/?system=${rbdSystemId}`} target="_blank" rel="noreferrer">
+                <FileText /> Report
+              </a>
+            </Button>
             <Button size="sm" variant="secondary" onClick={() => setOptimizeOpen(true)} disabled={dirty} data-tour="optimize">
               <Sparkles /> Optimize
             </Button>
