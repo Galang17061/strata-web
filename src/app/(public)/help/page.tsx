@@ -41,7 +41,47 @@ export default function HelpPage() {
               ))}
             </ol>
           </nav>
-          <div className="min-w-0 flex-1" />
+          <div className="min-w-0 flex-1">
+            <section id="layers" className="scroll-mt-24">
+              <h2 className="text-h2">The idea: layers of blocks</h2>
+              <p className="mt-3 text-body text-foreground-muted">
+                Take something familiar — a refrigerator. Underneath, it is a stack of
+                sub-systems: cooling, control, power. Each sub-system breaks down further
+                into the components that actually fail: a compressor, a thermostat, a
+                relay. Strata models any engineered system exactly this way, as layers of
+                blocks called a reliability block diagram. Every block carries its own
+                chance of still working after a given number of running hours, and the
+                layers roll up — component to group, group to sub-system, sub-system to
+                system — so the single figure at the top always has a path back to the
+                part that produced it.
+              </p>
+            </section>
+            <section id="master-data" className="mt-12 scroll-mt-24">
+              <h2 className="text-h2">The catalogue</h2>
+              <p className="mt-3 text-body text-foreground-muted">
+                Everything starts in Master data. Every component lives in a catalogue
+                with the vendor who makes it, its failure rate, its price, and the list of
+                other parts it is compatible with. The same component can come from
+                several vendors, each with different numbers — that variety is exactly
+                what the optimization studio searches over later. Vendors carry their own
+                records and logos, and the whole catalogue can be imported from and
+                exported to a spreadsheet.
+              </p>
+            </section>
+            <section id="building" className="mt-12 scroll-mt-24">
+              <h2 className="text-h2">Building a system</h2>
+              <p className="mt-3 text-body text-foreground-muted">
+                A project holds your machine; inside it, a system lays out sub-systems and
+                components on the canvas. When a project is created you choose how many
+                levels its systems may nest, from one to ten. Blocks are wired the way the
+                machine really connects: in series, in parallel, or k-out-of-n — a block
+                that works as long as at least k of its n units do. From the wiring,
+                Strata derives the reliability formula of every level by itself; you can
+                read it, and override it with a custom formula when the topology alone
+                does not tell the whole story.
+              </p>
+            </section>
+          </div>
         </div>
       </main>
       <LandingFooter />
