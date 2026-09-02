@@ -21,7 +21,8 @@ export default function DemoPage() {
           controls
           preload="metadata"
           playsInline
-          className="mt-10 w-full"
+          poster="/media/strata-tutorial-poster.jpg"
+          className="mt-10 aspect-video w-full rounded-lg border border-border bg-black shadow-lg"
           src="/media/strata-tutorial.mp4"
         />
       </main>
