@@ -175,7 +175,7 @@ export function ProjectsScreen() {
         description="Every project and the systems modelled inside it."
         actions={
           <PermissionGate moduleName={MODULES.DESIGN_FOR_RELIABILITY} permission="create">
-            <Button onClick={openCreate}>
+            <Button onClick={openCreate} data-tour="new-project">
               <Plus /> New project
             </Button>
           </PermissionGate>

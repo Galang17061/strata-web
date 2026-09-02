@@ -71,6 +71,15 @@ export function TourOverlay() {
   }, [current]);
 
   useEffect(() => {
+    if (!current?.waitFor) return;
+    const probe = current.waitFor;
+    const timer = window.setInterval(() => {
+      if (document.querySelector(probe)) next();
+    }, 200);
+    return () => window.clearInterval(timer);
+  }, [current, next]);
+
+  useEffect(() => {
     if (!track) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") stop();
@@ -131,9 +140,13 @@ export function TourOverlay() {
                 Back
               </Button>
             ) : null}
-            <Button size="sm" onClick={last ? stop : next}>
-              {last ? "Done" : "Next"}
-            </Button>
+            {current.waitFor ? (
+              <p className="self-center text-caption text-foreground-subtle italic">Your turn</p>
+            ) : (
+              <Button size="sm" onClick={last ? stop : next}>
+                {last ? "Done" : "Next"}
+              </Button>
+            )}
           </div>
         </div>
       </div>
