@@ -19,10 +19,28 @@ export function LandingFooter() {
             Demo
           </Link>
           <Link
+            href="/about"
+            className="rounded-sm underline-offset-4 hover:text-foreground hover:underline"
+          >
+            About
+          </Link>
+          <Link
+            href="/changelog"
+            className="rounded-sm underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Changelog
+          </Link>
+          <Link
             href="/terms"
             className="rounded-sm underline-offset-4 hover:text-foreground hover:underline"
           >
             Terms
+          </Link>
+          <Link
+            href="/privacy"
+            className="rounded-sm underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Privacy
           </Link>
           {swagger ? (
             <a
