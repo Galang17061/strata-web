@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Wordmark } from "@/components/brand/wordmark";
+import { ForgotPasswordForm } from "@/features/auth/forgot-password-form";
 
 export const metadata: Metadata = {
   title: "Forgot password",
@@ -19,6 +20,7 @@ export default function ForgotPasswordPage() {
           Tell us the email on your account and a reset letter will be on its way.
         </p>
       </div>
+      <ForgotPasswordForm />
     </main>
   );
 }

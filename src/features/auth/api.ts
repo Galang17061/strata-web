@@ -13,3 +13,8 @@ export async function logout(): Promise<void> {
 export async function currentUser(): Promise<CurrentUser> {
   return api.get<CurrentUser>("/User/me", { silent: true });
 }
+
+export async function forgotPassword(email: string): Promise<string> {
+  const response = await api.post<Envelope<null>>("/Auth/ForgotPassword", { email });
+  return response.message;
+}
