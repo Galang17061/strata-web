@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 function GoogleMark() {
@@ -37,6 +38,8 @@ function MicrosoftMark() {
 }
 
 export function SsoButtons() {
+  const [asked, setAsked] = useState<string | null>(null);
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3 text-caption text-foreground-muted">
@@ -45,13 +48,19 @@ export function SsoButtons() {
         <span className="h-px flex-1 bg-border" />
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <Button type="button" variant="outline">
+        <Button type="button" variant="outline" onClick={() => setAsked("Google")}>
           <GoogleMark /> Google
         </Button>
-        <Button type="button" variant="outline">
+        <Button type="button" variant="outline" onClick={() => setAsked("Microsoft")}>
           <MicrosoftMark /> Microsoft
         </Button>
       </div>
+      {asked ? (
+        <p role="status" className="rounded-sm bg-accent px-3 py-2 text-body-sm text-accent-foreground">
+          Signing in with {asked} is not available yet. Use the username your administrator
+          gave you; single sign-on will arrive in a later release.
+        </p>
+      ) : null}
     </div>
   );
 }
