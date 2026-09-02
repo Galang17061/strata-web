@@ -44,6 +44,35 @@ export default function TermsPage() {
             top of the numbers remain the responsibility of the people who take them.
           </p>
         </section>
+        <section className="mt-10">
+          <h2 className="text-h2">Fair use</h2>
+          <p className="mt-3 text-body text-foreground-muted">
+            Use Strata for the reliability work it was built for. Do not probe it for
+            weaknesses, pull data you have no role for, flood it with automated traffic, or
+            resell access to it. An account used that way can be closed without notice.
+          </p>
+        </section>
+        <section className="mt-10">
+          <h2 className="text-h2">Availability, honestly</h2>
+          <p className="mt-3 text-body text-foreground-muted">
+            Strata is offered as it stands, without a promise of uninterrupted service.
+            Maintenance windows, upgrades and faults happen; when they do, the aim is to be
+            back quickly and to lose nothing. Keep exports of anything you cannot afford to
+            retype.
+          </p>
+        </section>
+        <section className="mt-10">
+          <h2 className="text-h2">Changes and questions</h2>
+          <p className="mt-3 text-body text-foreground-muted">
+            These terms may change as the product does; the date below always tells you
+            which version you are reading, and meaningful changes will be visible here
+            before they bind you. Questions about the terms go to your administrator or to
+            the owner of your Strata deployment.
+          </p>
+        </section>
+        <p className="mt-12 border-t border-border pt-6 text-body-sm text-foreground-muted">
+          In force since 3 September 2026.
+        </p>
       </main>
       <LandingFooter />
     </>
