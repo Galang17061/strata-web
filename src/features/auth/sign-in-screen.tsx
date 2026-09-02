@@ -65,6 +65,7 @@ export function SignInScreen() {
   const { hydrated, isAuthenticated } = useSession();
   const signIn = useSignIn();
   const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
   const errorId = useId();
   const expired = params.get("code") === "401";
   const next = params.get("next");
@@ -168,6 +169,15 @@ export function SignInScreen() {
                 </p>
               ) : null}
             </div>
+            <label className="flex w-fit cursor-pointer items-center gap-2 text-body-sm text-foreground-muted">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(event) => setRemember(event.target.checked)}
+                className="size-4 cursor-pointer accent-(--primary)"
+              />
+              Keep me signed in on this device
+            </label>
             {failureMessage ? (
               <p id={errorId} role="alert" className={cn("rounded-sm bg-danger/10 px-3 py-2 text-body-sm text-danger")}>
                 {failureMessage}
