@@ -81,6 +81,35 @@ export default function HelpPage() {
                 does not tell the whole story.
               </p>
             </section>
+            <section id="predicting" className="mt-12 scroll-mt-24">
+              <h2 className="text-h2">Predicting reliability</h2>
+              <p className="mt-3 text-body text-foreground-muted">
+                Each component carries a distribution that turns running hours into a
+                probability. With a constant failure rate the exponential law applies:
+                R(t) = e^(−λt), where λ is the failure rate and t the running hours. A
+                part that ages has Weibull: R(t) = e^(−(t/α)^β), where the shape β says
+                whether failures come early (β below 1), at random (β near 1), or from
+                wear-out (β above 1), and the scale α is its characteristic life in hours.
+                A part that tolerates repairs has Poisson: it survives as long as no more
+                than c failures have occurred, with c = 0 collapsing back to exponential.
+                Set the hours, press Recalculate, and Strata walks the tree bottom-up —
+                component, sub-system, system — and draws how the chance of working decays
+                over time.
+              </p>
+            </section>
+            <section id="failures" className="mt-12 scroll-mt-24">
+              <h2 className="text-h2">Failures and fitting</h2>
+              <p className="mt-3 text-body text-foreground-muted">
+                Real machines break, and every breakdown belongs in the failure log with
+                the hours the part had run. From that history Strata learns the part&apos;s
+                real behaviour: one button fits a Weibull model to the recorded lifetimes,
+                another fits a Poisson rate from the observed fault counts. From then on
+                the prediction is not the vendor&apos;s brochure number any more — it is your
+                number, from your machine. The log, the fitted parameters and the curve
+                all live side by side on the component sheet, so the evidence is never far
+                from the conclusion.
+              </p>
+            </section>
           </div>
         </div>
       </main>
