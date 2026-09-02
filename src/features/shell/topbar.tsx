@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CircleHelp, Menu, Search } from "lucide-react";
+import { BookOpen, CircleHelp, Menu, Route, Search, Sparkles } from "lucide-react";
 import { Fragment } from "react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import {
@@ -13,6 +13,13 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { RouteProgress } from "@/features/shell/route-progress";
 import { useUiStore } from "@/features/shell/ui-store";
 import { UserMenu } from "@/features/shell/user-menu";
@@ -71,14 +78,27 @@ export function Topbar() {
           Ctrl K
         </kbd>
       </Button>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label="Start the product tour"
-        onClick={() => startTour("product")}
-      >
-        <CircleHelp />
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon-sm" aria-label="Help and tours">
+            <CircleHelp />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => startTour("product")}>
+            <Route /> Product tour
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => startTour("studio")}>
+            <Sparkles /> Optimization tour
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <a href="/help/" target="_blank" rel="noreferrer">
+              <BookOpen /> Help pages
+            </a>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <ThemeToggle className="hidden md:inline-flex" />
       <div className="lg:hidden">
         <UserMenu compact tone="surface" />
