@@ -33,6 +33,7 @@ function NavLink({
     <Link
       href={item.href}
       onClick={onNavigate}
+      data-tour={item.href}
       aria-current={active ? "page" : undefined}
       className={cn(
         "relative flex h-10 items-center gap-3 rounded-sm px-3 text-body-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",

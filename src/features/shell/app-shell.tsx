@@ -10,6 +10,7 @@ import { CommandPalette } from "@/features/shell/command-palette";
 import { Sidebar, SidebarContent } from "@/features/shell/sidebar";
 import { Topbar } from "@/features/shell/topbar";
 import { useUiStore } from "@/features/shell/ui-store";
+import { TourOverlay } from "@/features/tour/tour-overlay";
 import { cn } from "@/lib/utils";
 
 function MobileNav() {
@@ -61,6 +62,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <MobileNav />
       <CommandPalette />
       <ChangePasswordDialog />
+      <TourOverlay />
     </TooltipProvider>
   );
 }

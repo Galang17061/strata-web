@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, Search } from "lucide-react";
+import { CircleHelp, Menu, Search } from "lucide-react";
 import { Fragment } from "react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import {
@@ -16,11 +16,13 @@ import { Button } from "@/components/ui/button";
 import { RouteProgress } from "@/features/shell/route-progress";
 import { useUiStore } from "@/features/shell/ui-store";
 import { UserMenu } from "@/features/shell/user-menu";
+import { useTourStore } from "@/features/tour/store";
 
 export function Topbar() {
   const breadcrumbs = useUiStore((state) => state.breadcrumbs);
   const setMobileNavOpen = useUiStore((state) => state.setMobileNavOpen);
   const setPaletteOpen = useUiStore((state) => state.setPaletteOpen);
+  const startTour = useTourStore((state) => state.start);
   const last = breadcrumbs[breadcrumbs.length - 1];
 
   return (
@@ -68,6 +70,14 @@ export function Topbar() {
         <kbd className="hidden rounded-sm border border-border bg-surface-sunken px-1.5 font-mono text-caption tracking-normal text-foreground-subtle md:inline">
           Ctrl K
         </kbd>
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label="Start the product tour"
+        onClick={() => startTour("product")}
+      >
+        <CircleHelp />
       </Button>
       <ThemeToggle className="hidden md:inline-flex" />
       <div className="lg:hidden">
