@@ -17,6 +17,13 @@ export default function DemoPage() {
           A guided tour in just over three minutes: from the parts catalogue to a wired
           diagram, a fitted curve, and a vendor line-up picked by the search.
         </p>
+        <video
+          controls
+          preload="metadata"
+          playsInline
+          className="mt-10 w-full"
+          src="/media/strata-tutorial.mp4"
+        />
       </main>
       <LandingFooter />
     </>
