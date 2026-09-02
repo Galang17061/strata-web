@@ -18,6 +18,7 @@ import { applyOptimization, runOptimizationPreview, scoreOptimizationChoices } f
 import { ConvergenceChart } from "@/features/optimization/convergence-chart";
 import { PreviewTable } from "@/features/optimization/preview-table";
 import { choicesOf, hasManualChanges, locksOf } from "@/features/optimization/selection";
+import { useTourStore } from "@/features/tour/store";
 import type {
   OptimizationChoice,
   OptimizationMode,
@@ -367,7 +368,7 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
       <DialogContent
         className="flex max-h-[90dvh] w-full flex-col overflow-hidden sm:max-w-4xl"
         onInteractOutside={(event) => {
-          if (event.target instanceof Element && event.target.closest("[data-tour-overlay]")) event.preventDefault();
+          if (useTourStore.getState().track) event.preventDefault();
         }}
       >
         <DialogHeader>
