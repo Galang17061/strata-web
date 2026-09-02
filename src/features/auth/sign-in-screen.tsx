@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DASHBOARD_PATH, useSession, useSignIn } from "@/features/auth/session";
 import { setRememberMe } from "@/features/auth/store";
+import { SsoButtons } from "@/features/auth/sso-buttons";
 import { ApiError } from "@/lib/api/client";
 import { useMotionTokens } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -188,6 +189,7 @@ export function SignInScreen() {
             <Button type="submit" size="lg" loading={signIn.isPending} className="w-full">
               <LogIn /> Sign in
             </Button>
+            <SsoButtons />
           </form>
         </div>
       </div>
