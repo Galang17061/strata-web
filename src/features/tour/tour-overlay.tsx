@@ -92,7 +92,7 @@ export function TourOverlay() {
 
   const hole = rect ? spotlightFrom(rect) : null;
   const last = step === steps.length - 1;
-  const shade = "absolute bg-brand-950/60 backdrop-blur-[2px]";
+  const shade = "pointer-events-auto absolute bg-brand-950/60 backdrop-blur-[2px]";
   const cardTop = hole
     ? hole.top + hole.height + 12 + 220 < window.innerHeight
       ? hole.top + hole.height + 12
@@ -101,7 +101,7 @@ export function TourOverlay() {
   const cardLeft = hole ? Math.min(Math.max(12, hole.left), window.innerWidth - 340) : window.innerWidth / 2 - 164;
 
   return (
-    <div className="fixed inset-0 z-[80]" role="dialog" aria-modal="true" aria-label="Product tour">
+    <div className="pointer-events-none fixed inset-0 z-[80]" role="dialog" aria-modal="true" aria-label="Product tour">
       {hole ? (
         <>
           <div className={shade} style={{ top: 0, left: 0, right: 0, height: Math.max(0, hole.top) }} />
@@ -120,7 +120,7 @@ export function TourOverlay() {
         <div className={shade} style={{ inset: 0 }} />
       )}
       <div
-        className="absolute flex w-80 flex-col gap-3 rounded-md border border-border bg-surface p-4 shadow-lg"
+        className="pointer-events-auto absolute flex w-80 flex-col gap-3 rounded-md border border-border bg-surface p-4 shadow-lg"
         style={{ top: cardTop, left: cardLeft }}
       >
         <div className="flex items-baseline justify-between gap-3">
