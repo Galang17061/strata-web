@@ -64,5 +64,38 @@ export const tracks: Record<TourTrack, TourStep[]> = {
       body: "The details panel follows your selection: reliability, MTBF, parameters and curves for whichever layer or part you are looking at. That is the whole loop — model, run, read.",
     },
   ],
-  studio: [],
+  studio: [
+    {
+      id: "open",
+      target: '[data-tour="optimize"]',
+      title: "The optimization studio",
+      body: "With a system open in the workspace, click Optimize. The studio searches vendor line-ups for the very diagram you are looking at.",
+      waitFor: '[data-tour="ga-modes"]',
+    },
+    {
+      id: "modes",
+      target: '[data-tour="ga-modes"]',
+      title: "Pick a goal",
+      body: "Three ways to steer the search: the strongest system regardless of cost, the strongest within a budget, or a balance of budget and a reliability floor.",
+    },
+    {
+      id: "run",
+      target: '[data-tour="ga-run"]',
+      title: "Let the search run",
+      body: "Click Run the search: hundreds of candidate line-ups every round, bred and mutated like nature does it, each one scored on your real diagram. The tour waits for the results.",
+      waitFor: '[data-tour="ga-table"]',
+    },
+    {
+      id: "table",
+      target: '[data-tour="ga-table"]',
+      title: "Read the verdict",
+      body: "Every part sits beside the vendor the search would give it, with the change in failure rate, cost and reliability. Disagree with a row? Re-pick it, pin it, and run again — pinned choices become fixed genes.",
+    },
+    {
+      id: "apply",
+      target: '[data-tour="ga-apply"]',
+      title: "Keep what you like",
+      body: "Use this line-up copies the whole system into a brand-new project with the chosen vendors in place. Your original drawing is never touched.",
+    },
+  ],
 };

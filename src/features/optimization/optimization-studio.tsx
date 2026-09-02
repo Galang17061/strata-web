@@ -58,7 +58,7 @@ export function defaultSettings(): OptimizationSettings {
 
 function ModeCards({ value, onChange }: { value: OptimizationMode; onChange: (mode: OptimizationMode) => void }) {
   return (
-    <div role="radiogroup" aria-label="Optimization goal" className="grid gap-3 sm:grid-cols-3">
+    <div role="radiogroup" aria-label="Optimization goal" data-tour="ga-modes" className="grid gap-3 sm:grid-cols-3">
       {([1, 2, 3] as const).map((mode) => {
         const copy = modeCopy[mode];
         const Icon = copy.icon;
@@ -426,14 +426,16 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
                 <p className="text-caption text-foreground-muted normal-case tracking-normal">now {formatMoney(totals?.baselineCost)}</p>
               </div>
             </div>
-            <PreviewTable
-              slots={preview.slots}
-              fixedSlots={preview.fixedSlots}
-              selections={selections}
-              locked={locked}
-              onSelect={selectVendor}
-              onToggleLock={toggleLock}
-            />
+            <div data-tour="ga-table">
+              <PreviewTable
+                slots={preview.slots}
+                fixedSlots={preview.fixedSlots}
+                selections={selections}
+                locked={locked}
+                onSelect={selectVendor}
+                onToggleLock={toggleLock}
+              />
+            </div>
             <ConvergenceChart history={preview.history ?? []} />
             {problem ? (
               <p role="alert" className="rounded-sm bg-danger/10 px-3 py-2 text-body-sm text-danger">
@@ -446,6 +448,7 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
               </Button>
               <Button
                 size="sm"
+                data-tour="ga-apply"
                 onClick={() => {
                   setProjectName("");
                   setNewSystemName(`${systemName ?? rbdSystemId} (optimized)`);
@@ -508,7 +511,7 @@ export function OptimizationStudio({ open, onOpenChange, rbdSystemId, systemName
               </p>
             ) : null}
             <div className="flex items-center justify-end">
-              <Button onClick={() => startRun([])} loading={run.isPending}>
+              <Button onClick={() => startRun([])} loading={run.isPending} data-tour="ga-run">
                 <Play /> Run the search
               </Button>
             </div>

@@ -416,7 +416,7 @@ export function WorkspaceScreen() {
         <div className="ml-auto flex items-center gap-2">
           {dirty ? <span className="text-caption text-warning normal-case tracking-normal">Unsaved changes</span> : null}
           <PermissionGate moduleName={MODULES.DESIGN_FOR_RELIABILITY} permission="update">
-            <Button size="sm" variant="secondary" onClick={() => setOptimizeOpen(true)} disabled={dirty}>
+            <Button size="sm" variant="secondary" onClick={() => setOptimizeOpen(true)} disabled={dirty} data-tour="optimize">
               <Sparkles /> Optimize
             </Button>
             <Button
