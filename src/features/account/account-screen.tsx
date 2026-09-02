@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { KeyRound, Pencil, ShieldCheck, Trash2, UserPlus } from "lucide-react";
+import { KeyRound, MailPlus, Pencil, ShieldCheck, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/brand/empty-state";
@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { AccessSheet } from "@/features/account/access-sheet";
+import { InviteDialog } from "@/features/account/invite-dialog";
 import { deleteUser, listUsers } from "@/features/account/api";
 import { ResetPasswordDialog } from "@/features/account/reset-password-dialog";
 import { RoleBadge } from "@/features/account/role-badge";
@@ -51,6 +52,7 @@ export function AccountScreen() {
   const rows = users.data?.data ?? [];
   const meta = users.data?.meta ?? null;
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
   const openCreate = () => {
     setEditing(null);
@@ -81,9 +83,14 @@ export function AccountScreen() {
         title="Account management"
         description={users.data ? `${countOf(meta?.totalData ?? rows.length, "person", "people")} can sign in.` : "Who can sign in, and what each of them may do."}
         actions={
-          <Button onClick={openCreate}>
-            <UserPlus /> New person
-          </Button>
+          <>
+            <Button variant="secondary" onClick={() => setInviteOpen(true)}>
+              <MailPlus /> Invite by email
+            </Button>
+            <Button onClick={openCreate}>
+              <UserPlus /> New person
+            </Button>
+          </>
         }
       />
       {users.isPending ? (
@@ -162,6 +169,7 @@ export function AccountScreen() {
       ) : null}
       <RolesCard />
       <UserSheet open={sheetOpen} onOpenChange={setSheetOpen} user={editing} />
+      <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} />
       <AccessSheet
         user={accessFor}
         onOpenChange={(open) => {

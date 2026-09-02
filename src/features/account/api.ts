@@ -49,6 +49,16 @@ export function deleteUser(userId: string): Promise<Envelope<null>> {
   return api.delete<Envelope<null>>(`/User/${encodeURIComponent(userId)}`);
 }
 
+export type InviteResult = {
+  inviteUrl: string;
+  expiresAt: string;
+  delivered: boolean;
+};
+
+export function inviteUser(input: { email: string; roleId: string }): Promise<Envelope<InviteResult>> {
+  return api.post<Envelope<InviteResult>>("/User/Invite", input);
+}
+
 export function listRoles(): Promise<Envelope<Role[]>> {
   return api.get<Envelope<Role[]>>(`/Role${queryString({ page: 1, pageSize: 100 })}`);
 }
