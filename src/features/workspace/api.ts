@@ -183,6 +183,8 @@ export type ParameterSuggestion = {
   totalHours: number;
   failureRate: number | null;
   mtbf: number | null;
+  beta: number | null;
+  eta: number | null;
 };
 
 export function suggestedParameters(systemComponentId: string): Promise<Envelope<ParameterSuggestion>> {

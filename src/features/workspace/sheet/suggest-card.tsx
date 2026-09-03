@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { suggestedParameters, updateComponent } from "@/features/workspace/api";
 import { formFromDetail, toUpdateInput } from "@/features/workspace/sheet/properties-tab";
 import type { ComponentDetail } from "@/features/workspace/types";
-import { formatFailureRate, formatHours } from "@/lib/format";
+import { formatFailureRate, formatHours, formatReliability } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
 
 export function suggestionStory(suggestion: {
@@ -52,6 +52,8 @@ export function SuggestCard({ detail, canEdit }: SuggestCardProps) {
         ...input,
         failureRate: data.failureRate,
         mtbf: data.mtbf ?? input.mtbf,
+        shapeParameter: data.beta ?? input.shapeParameter,
+        scaleParameter: data.eta ?? input.scaleParameter,
       });
     },
     onSuccess: async () => {
@@ -86,6 +88,12 @@ export function SuggestCard({ detail, canEdit }: SuggestCardProps) {
           {data.failureRate !== null ? (
             <p className="font-mono text-body-sm">
               λ = {formatFailureRate(data.failureRate)} · MTBF = {formatHours(data.mtbf)}
+            </p>
+          ) : null}
+          {data.beta !== null && data.eta !== null ? (
+            <p className="font-mono text-body-sm">
+              β = {formatReliability(data.beta, 4)} · η = {formatHours(data.eta)}
+              <span className="ml-2 font-sans text-caption text-foreground-muted">Weibull, from the same records</span>
             </p>
           ) : null}
           <p className="text-caption text-foreground-muted normal-case tracking-normal">{suggestionStory(data)}</p>
