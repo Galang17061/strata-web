@@ -137,6 +137,28 @@ export async function fitDistribution(systemComponentId: string, distribution: "
   await api.put<Envelope<unknown>>(`${base}/exponential`, {});
 }
 
+export type ReliabilityAlert = {
+  notificationId: string;
+  rbdSystemId: string;
+  title: string;
+  body: string;
+  createdAt: string;
+};
+
+export function listAlerts(limit = 15): Promise<Envelope<ReliabilityAlert[]>> {
+  return api.get<Envelope<ReliabilityAlert[]>>(`/Notification${queryString({ limit })}`, { silent: true });
+}
+
+export function getThreshold(rbdSystemId: string): Promise<Envelope<{ threshold: number | null }>> {
+  return api.get<Envelope<{ threshold: number | null }>>(
+    `/MasterSystem/${encodeURIComponent(rbdSystemId)}/threshold`,
+  );
+}
+
+export function setThreshold(rbdSystemId: string, threshold: number | null): Promise<Envelope<null>> {
+  return api.put<Envelope<null>>(`/MasterSystem/${encodeURIComponent(rbdSystemId)}/threshold`, { threshold });
+}
+
 export type ParameterSuggestion = {
   source: "history" | "vendor" | "master" | "none";
   events: number;

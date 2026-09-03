@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NotificationBell } from "@/features/shell/notification-bell";
 import { RouteProgress } from "@/features/shell/route-progress";
 import { useUiStore } from "@/features/shell/ui-store";
 import { UserMenu } from "@/features/shell/user-menu";
@@ -78,6 +79,7 @@ export function Topbar() {
           Ctrl K
         </kbd>
       </Button>
+      <NotificationBell />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon-sm" aria-label="Help and tours">
