@@ -16,18 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { SystemTree } from "@/features/projects/types";
-import {
-  childHierarchies,
-  fitDistribution,
-  getComponent,
-  hierarchyReliability,
-  listDrawingEdges,
-  saveDrawingEdges,
-  updateComponent,
-  updateRunningHours,
-} from "@/features/workspace/api";
-import { allComponents } from "@/features/workspace/model";
-import { distributionOf, formFromDetail, toUpdateInput } from "@/features/workspace/sheet/properties-tab";
+import { batchRecalculate, childHierarchies, updateRunningHours } from "@/features/workspace/api";
 import { ApiError } from "@/lib/api/client";
 import { formatHours } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
@@ -41,24 +30,6 @@ type RecalculateDialogProps = {
   onSettled: () => void;
 };
 
-async function rescoreEveryPart(tree: SystemTree, runningHours: number): Promise<string[]> {
-  const unfitted: string[] = [];
-  for (const component of allComponents(tree)) {
-    const detail = (await getComponent(component.systemComponentId)).data;
-    await updateComponent(component.systemComponentId, { ...toUpdateInput(detail, formFromDetail(detail)), runningHours });
-    await fitDistribution(component.systemComponentId, distributionOf(detail)).catch(() => unfitted.push(detail.componentName));
-  }
-  for (const level of tree.hierarchy ?? []) {
-    await hierarchyReliability(level.hierarchyId);
-  }
-  const edges = (await listDrawingEdges("system", tree.rbdSystemId)).data ?? [];
-  const links = edges.flatMap((edge) =>
-    edge.idEdge && edge.sourceId && edge.targetId ? [{ idEdge: edge.idEdge, sourceId: edge.sourceId, targetId: edge.targetId }] : [],
-  );
-  if (links.length > 0) await saveDrawingEdges("system", tree.rbdSystemId, links);
-  return unfitted;
-}
-
 export function refusesLayeredSystem(error: unknown): boolean {
   if (!(error instanceof ApiError)) return false;
   const body = error.body as { message?: unknown } | undefined;
@@ -66,13 +37,19 @@ export function refusesLayeredSystem(error: unknown): boolean {
   return /component-level/i.test(message);
 }
 
-export async function recalculateSystem(tree: SystemTree, runningHours: number): Promise<string[]> {
+export type RecalculateOutcome = {
+  unfitted: string[];
+  uncalculated: string[];
+};
+
+export async function recalculateSystem(tree: SystemTree, runningHours: number): Promise<RecalculateOutcome> {
   try {
     await updateRunningHours(tree.rbdSystemId, runningHours);
-    return [];
+    return { unfitted: [], uncalculated: [] };
   } catch (error) {
     if (!refusesLayeredSystem(error)) throw error;
-    return rescoreEveryPart(tree, runningHours);
+    const result = await batchRecalculate(tree.rbdSystemId, runningHours);
+    return { unfitted: result.data.unfitted ?? [], uncalculated: result.data.uncalculated ?? [] };
   }
 }
 
@@ -101,15 +78,20 @@ export function RecalculateDialog({ open, onOpenChange, rbdSystemId, tree, onSta
       onOpenChange(false);
       onStarted();
     },
-    onSuccess: async (unfitted) => {
+    onSuccess: async (outcome) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.systems.all });
       await queryClient.invalidateQueries({ queryKey: queryKeys.components.all });
       await queryClient.invalidateQueries({ queryKey: ["hierarchy"] });
       await queryClient.invalidateQueries({ queryKey: ["drawing"] });
-      if (unfitted.length > 0) {
-        toast.warning("Recalculated, with gaps", {
-          description: `${unfitted.join(", ")} kept the old score because the distribution could not be fitted.`,
-        });
+      const gaps: string[] = [];
+      if (outcome.unfitted.length > 0) {
+        gaps.push(`${outcome.unfitted.join(", ")} kept the old score because the distribution could not be fitted`);
+      }
+      if (outcome.uncalculated.length > 0) {
+        gaps.push(`${outcome.uncalculated.join(", ")} could not be evaluated from its formula`);
+      }
+      if (gaps.length > 0) {
+        toast.warning("Recalculated, with gaps", { description: `${gaps.join("; ")}.` });
         return;
       }
       toast.success("System recalculated", { description: `Every block was scored again at ${formatHours(Number(hours))}.` });

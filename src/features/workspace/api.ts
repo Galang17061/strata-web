@@ -137,6 +137,23 @@ export async function fitDistribution(systemComponentId: string, distribution: "
   await api.put<Envelope<unknown>>(`${base}/exponential`, {});
 }
 
+export type BatchRecalculateResult = {
+  components: number;
+  unfitted: string[];
+  uncalculated: string[];
+  reliabilityTotal: number | null;
+};
+
+export function batchRecalculate(
+  rbdSystemId: string,
+  runningHours: number,
+): Promise<Envelope<BatchRecalculateResult>> {
+  return api.post<Envelope<BatchRecalculateResult>>(
+    `/ReliabilityTotal/system/${encodeURIComponent(rbdSystemId)}/recalculate`,
+    { runningHours },
+  );
+}
+
 export type ReliabilityAlert = {
   notificationId: string;
   rbdSystemId: string;
