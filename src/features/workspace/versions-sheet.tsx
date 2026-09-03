@@ -1,9 +1,11 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Camera } from "lucide-react";
+import { Camera, RotateCcw, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +18,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { listVersions, saveVersion } from "@/features/workspace/api";
+import { deleteVersion, listVersions, restoreVersion, saveVersion, type SystemVersion } from "@/features/workspace/api";
 
 type VersionsSheetProps = {
   open: boolean;
@@ -53,6 +55,27 @@ export function VersionsSheet({ open, onOpenChange, rbdSystemId }: VersionsSheet
       toast.success("Version saved", { description: envelope.data.label });
     },
     onError: (error) => toast.error("The version could not be saved", { description: error.message }),
+  });
+  const router = useRouter();
+  const [restoring, setRestoring] = useState<SystemVersion | null>(null);
+  const restore = useMutation({
+    mutationFn: (version: SystemVersion) => restoreVersion(version.systemSnapshotId),
+    onSuccess: async (envelope, version) => {
+      setRestoring(null);
+      onOpenChange(false);
+      await queryClient.invalidateQueries({ queryKey: ["systems"] });
+      toast.success("Version restored", { description: `${version.label} lives again as a new system.` });
+      router.push(`/workspace/?project=${envelope.data.projectId}&system=${envelope.data.rbdSystemId}`);
+    },
+    onError: (error) => toast.error("The version could not be restored", { description: error.message }),
+  });
+  const remove = useMutation({
+    mutationFn: (version: SystemVersion) => deleteVersion(version.systemSnapshotId),
+    onSuccess: async (_, version) => {
+      await queryClient.invalidateQueries({ queryKey: ["versions", rbdSystemId] });
+      toast.success("Version removed", { description: version.label });
+    },
+    onError: (error) => toast.error("The version could not be removed", { description: error.message }),
   });
 
   return (
@@ -112,10 +135,41 @@ export function VersionsSheet({ open, onOpenChange, rbdSystemId }: VersionsSheet
                   {formatVersionMoment(version.createdAt)}
                   {version.createdBy ? ` · ${version.createdBy}` : ""}
                 </p>
+                <div className="flex items-center gap-1.5">
+                  <Button size="sm" variant="secondary" onClick={() => setRestoring(version)}>
+                    <RotateCcw /> Restore
+                  </Button>
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label={`Remove version ${version.label}`}
+                    onClick={() => remove.mutate(version)}
+                    loading={remove.isPending && remove.variables?.systemSnapshotId === version.systemSnapshotId}
+                  >
+                    <Trash2 />
+                  </Button>
+                </div>
               </li>
             ))}
           </ol>
         )}
+        <ConfirmDialog
+          open={Boolean(restoring)}
+          onOpenChange={(next) => {
+            if (!next) setRestoring(null);
+          }}
+          title="Restore this version?"
+          description={
+            restoring
+              ? `${restoring.label} will come back as a brand-new system in the same project. Nothing here is overwritten.`
+              : ""
+          }
+          confirmLabel="Restore"
+          loading={restore.isPending}
+          onConfirm={() => {
+            if (restoring) restore.mutate(restoring);
+          }}
+        />
       </SheetContent>
     </Sheet>
   );
