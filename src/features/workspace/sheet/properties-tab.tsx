@@ -272,7 +272,6 @@ export function FittedFigures({ detail }: { detail: ComponentDetail }) {
       <p className="text-caption text-foreground-muted normal-case tracking-normal">
         These are worked out by Strata from the recorded failures and cannot be typed in.
       </p>
-      <SuggestCard systemComponentId={detail.systemComponentId ?? ""} />
     </div>
   );
 }
@@ -429,6 +428,7 @@ export function PropertiesTab({ systemComponentId, canEdit }: PropertiesTabProps
       </div>
 
       <FittedFigures detail={{ ...data, distributionType: form.distribution }} />
+      <SuggestCard detail={data} canEdit={canEdit} />
 
       {canEdit ? (
         <div className="flex flex-col gap-2 border-t border-border pt-4">

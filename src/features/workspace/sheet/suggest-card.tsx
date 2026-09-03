@@ -1,11 +1,15 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { Lightbulb } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Check, Lightbulb } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { suggestedParameters } from "@/features/workspace/api";
+import { suggestedParameters, updateComponent } from "@/features/workspace/api";
+import { formFromDetail, toUpdateInput } from "@/features/workspace/sheet/properties-tab";
+import type { ComponentDetail } from "@/features/workspace/types";
 import { formatFailureRate, formatHours } from "@/lib/format";
+import { queryKeys } from "@/lib/query-keys";
 
 export function suggestionStory(suggestion: {
   source: string;
@@ -26,17 +30,39 @@ export function suggestionStory(suggestion: {
 }
 
 type SuggestCardProps = {
-  systemComponentId: string;
+  detail: ComponentDetail;
+  canEdit: boolean;
 };
 
-export function SuggestCard({ systemComponentId }: SuggestCardProps) {
+export function SuggestCard({ detail, canEdit }: SuggestCardProps) {
   const [asked, setAsked] = useState(false);
+  const queryClient = useQueryClient();
+  const systemComponentId = detail.systemComponentId ?? "";
   const suggestion = useQuery({
     queryKey: ["suggestion", systemComponentId],
     queryFn: () => suggestedParameters(systemComponentId),
-    enabled: asked,
+    enabled: asked && Boolean(systemComponentId),
   });
   const data = suggestion.data?.data ?? null;
+  const apply = useMutation({
+    mutationFn: async () => {
+      if (!data?.failureRate) return;
+      const input = toUpdateInput(detail, formFromDetail(detail));
+      await updateComponent(systemComponentId, {
+        ...input,
+        failureRate: data.failureRate,
+        mtbf: data.mtbf ?? input.mtbf,
+      });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.components.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.systems.all });
+      toast.success("Suggested rate applied", {
+        description: "Recalculate to carry it through the layers.",
+      });
+    },
+    onError: (error) => toast.error("The rate could not be applied", { description: error.message }),
+  });
 
   if (!asked) {
     return (
@@ -63,6 +89,17 @@ export function SuggestCard({ systemComponentId }: SuggestCardProps) {
             </p>
           ) : null}
           <p className="text-caption text-foreground-muted normal-case tracking-normal">{suggestionStory(data)}</p>
+          {data.failureRate !== null && canEdit ? (
+            <Button
+              type="button"
+              size="sm"
+              className="self-start"
+              loading={apply.isPending}
+              onClick={() => apply.mutate()}
+            >
+              <Check /> Use this rate
+            </Button>
+          ) : null}
         </>
       ) : null}
     </div>
