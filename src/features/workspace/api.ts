@@ -137,6 +137,37 @@ export async function fitDistribution(systemComponentId: string, distribution: "
   await api.put<Envelope<unknown>>(`${base}/exponential`, {});
 }
 
+export type SystemVersion = {
+  systemSnapshotId: string;
+  rbdSystemId: string;
+  label: string;
+  kind: "manual" | "auto";
+  createdBy: string | null;
+  createdAt: string;
+};
+
+export function listVersions(rbdSystemId: string): Promise<Envelope<SystemVersion[]>> {
+  return api.get<Envelope<SystemVersion[]>>(`/Snapshot/system/${encodeURIComponent(rbdSystemId)}`);
+}
+
+export function saveVersion(rbdSystemId: string, label: string): Promise<Envelope<SystemVersion>> {
+  return api.post<Envelope<SystemVersion>>(`/Snapshot/system/${encodeURIComponent(rbdSystemId)}`, { label });
+}
+
+export function restoreVersion(
+  snapshotId: string,
+  systemName?: string,
+): Promise<Envelope<{ projectId: string; rbdSystemId: string }>> {
+  return api.post<Envelope<{ projectId: string; rbdSystemId: string }>>(
+    `/Snapshot/${encodeURIComponent(snapshotId)}/Restore`,
+    { systemName: systemName ?? null },
+  );
+}
+
+export function deleteVersion(snapshotId: string): Promise<Envelope<null>> {
+  return api.delete<Envelope<null>>(`/Snapshot/${encodeURIComponent(snapshotId)}`);
+}
+
 export function systemTotal(rbdSystemId: string): Promise<Envelope<SystemTotal>> {
   return api.get<Envelope<SystemTotal>>(`/ReliabilityTotal/rbdSystem/${encodeURIComponent(rbdSystemId)}/reliability-total`);
 }

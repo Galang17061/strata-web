@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, Info, PanelLeft, PanelRight, RefreshCw, Save, Sparkles } from "lucide-react";
+import { FileText, History, Info, PanelLeft, PanelRight, RefreshCw, Save, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/brand/empty-state";
@@ -52,6 +52,7 @@ import {
   type Level,
 } from "@/features/workspace/model";
 import { TreePanel, type TreeAction } from "@/features/workspace/tree-panel";
+import { VersionsSheet } from "@/features/workspace/versions-sheet";
 import { useWorkspaceStore } from "@/features/workspace/workspace-store";
 import { formatReliability } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
@@ -126,6 +127,7 @@ export function WorkspaceScreen() {
   const [componentDialog, setComponentDialog] = useState<TreeNode | null>(null);
   const [pendingDelete, setPendingDelete] = useState<TreeAction | null>(null);
   const [recalculateOpen, setRecalculateOpen] = useState(false);
+  const [versionsOpen, setVersionsOpen] = useState(false);
   const [optimizeOpen, setOptimizeOpen] = useState(false);
   const [plotOpen, setPlotOpen] = useState(false);
   const [recalculating, setRecalculating] = useState(false);
@@ -416,6 +418,9 @@ export function WorkspaceScreen() {
         <div className="ml-auto flex items-center gap-2">
           {dirty ? <span className="text-caption text-warning normal-case tracking-normal">Unsaved changes</span> : null}
           <PermissionGate moduleName={MODULES.DESIGN_FOR_RELIABILITY} permission="update">
+            <Button size="sm" variant="secondary" onClick={() => setVersionsOpen(true)}>
+              <History /> Versions
+            </Button>
             <Button size="sm" variant="secondary" asChild>
               <a href={`/report/?system=${rbdSystemId}`} target="_blank" rel="noreferrer">
                 <FileText /> Report
@@ -520,6 +525,7 @@ export function WorkspaceScreen() {
 
       <PlotDialog open={plotOpen} onOpenChange={setPlotOpen} tree={treeData} level={activeLevel} />
       <OptimizationStudio open={optimizeOpen} onOpenChange={setOptimizeOpen} rbdSystemId={rbdSystemId} systemName={treeData?.systemName ?? null} />
+      <VersionsSheet open={versionsOpen} onOpenChange={setVersionsOpen} rbdSystemId={rbdSystemId} />
       <RecalculateDialog
         open={recalculateOpen}
         onOpenChange={setRecalculateOpen}
