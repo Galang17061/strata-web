@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fitDistribution, getComponent, updateComponent } from "@/features/workspace/api";
+import { SuggestCard } from "@/features/workspace/sheet/suggest-card";
 import type { ComponentDetail, ComponentUpdateInput } from "@/features/workspace/types";
 import { formatFailureRate, formatHours, formatReliability } from "@/lib/format";
 import { queryKeys } from "@/lib/query-keys";
@@ -271,6 +272,7 @@ export function FittedFigures({ detail }: { detail: ComponentDetail }) {
       <p className="text-caption text-foreground-muted normal-case tracking-normal">
         These are worked out by Strata from the recorded failures and cannot be typed in.
       </p>
+      <SuggestCard systemComponentId={detail.systemComponentId ?? ""} />
     </div>
   );
 }

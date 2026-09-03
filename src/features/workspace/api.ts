@@ -137,6 +137,21 @@ export async function fitDistribution(systemComponentId: string, distribution: "
   await api.put<Envelope<unknown>>(`${base}/exponential`, {});
 }
 
+export type ParameterSuggestion = {
+  source: "history" | "vendor" | "master" | "none";
+  events: number;
+  components: number;
+  totalHours: number;
+  failureRate: number | null;
+  mtbf: number | null;
+};
+
+export function suggestedParameters(systemComponentId: string): Promise<Envelope<ParameterSuggestion>> {
+  return api.get<Envelope<ParameterSuggestion>>(
+    `/SystemComponentProperties/${encodeURIComponent(systemComponentId)}/suggested-parameters`,
+  );
+}
+
 export type SystemVersion = {
   systemSnapshotId: string;
   rbdSystemId: string;
