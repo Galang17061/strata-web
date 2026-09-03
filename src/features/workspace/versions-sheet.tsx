@@ -1,8 +1,13 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Camera } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -11,7 +16,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { listVersions } from "@/features/workspace/api";
+import { listVersions, saveVersion } from "@/features/workspace/api";
 
 type VersionsSheetProps = {
   open: boolean;
@@ -32,12 +37,23 @@ export function formatVersionMoment(value: string): string {
 }
 
 export function VersionsSheet({ open, onOpenChange, rbdSystemId }: VersionsSheetProps) {
+  const queryClient = useQueryClient();
+  const [label, setLabel] = useState("");
   const versions = useQuery({
     queryKey: ["versions", rbdSystemId],
     queryFn: () => listVersions(rbdSystemId),
     enabled: open && Boolean(rbdSystemId),
   });
   const rows = versions.data?.data ?? [];
+  const save = useMutation({
+    mutationFn: () => saveVersion(rbdSystemId, label.trim()),
+    onSuccess: async (envelope) => {
+      setLabel("");
+      await queryClient.invalidateQueries({ queryKey: ["versions", rbdSystemId] });
+      toast.success("Version saved", { description: envelope.data.label });
+    },
+    onError: (error) => toast.error("The version could not be saved", { description: error.message }),
+  });
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -49,6 +65,26 @@ export function VersionsSheet({ open, onOpenChange, rbdSystemId }: VersionsSheet
             system in the same project; the current drawing is never touched.
           </SheetDescription>
         </SheetHeader>
+        <form
+          className="flex items-end gap-2 px-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            save.mutate();
+          }}
+        >
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <Label htmlFor="version-label">Save the current state as</Label>
+            <Input
+              id="version-label"
+              placeholder="Before the vendor experiment"
+              value={label}
+              onChange={(event) => setLabel(event.target.value)}
+            />
+          </div>
+          <Button type="submit" loading={save.isPending} disabled={!label.trim()}>
+            <Camera /> Save
+          </Button>
+        </form>
         {versions.isPending && open ? (
           <div className="flex flex-col gap-3 px-4">
             <Skeleton className="h-12 w-full" />
