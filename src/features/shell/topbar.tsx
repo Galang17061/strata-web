@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, CircleHelp, Menu, Route, Search, Sparkles } from "lucide-react";
-import { Fragment } from "react";
+import { BookOpen, CircleHelp, Menu, MessageSquarePlus, Route, Search, Sparkles } from "lucide-react";
+import { Fragment, useState } from "react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import {
   Breadcrumb,
@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { FeedbackDialog } from "@/features/shell/feedback-dialog";
 import { NotificationBell } from "@/features/shell/notification-bell";
 import { RouteProgress } from "@/features/shell/route-progress";
 import { useUiStore } from "@/features/shell/ui-store";
@@ -31,6 +32,7 @@ export function Topbar() {
   const setMobileNavOpen = useUiStore((state) => state.setMobileNavOpen);
   const setPaletteOpen = useUiStore((state) => state.setPaletteOpen);
   const startTour = useTourStore((state) => state.start);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const last = breadcrumbs[breadcrumbs.length - 1];
 
   return (
@@ -79,6 +81,14 @@ export function Topbar() {
           Ctrl K
         </kbd>
       </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label="Write to the builders"
+        onClick={() => setFeedbackOpen(true)}
+      >
+        <MessageSquarePlus />
+      </Button>
       <NotificationBell />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -106,6 +116,7 @@ export function Topbar() {
         <UserMenu compact tone="surface" />
       </div>
       <RouteProgress />
+      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
     </header>
   );
 }
