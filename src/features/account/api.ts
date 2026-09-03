@@ -49,6 +49,19 @@ export function deleteUser(userId: string): Promise<Envelope<null>> {
   return api.delete<Envelope<null>>(`/User/${encodeURIComponent(userId)}`);
 }
 
+export type AuditEntry = {
+  auditTrailId: string;
+  userName: string;
+  method: string;
+  path: string;
+  statusCode: number;
+  createdAt: string;
+};
+
+export function listAudit(params: PageParams = {}): Promise<Envelope<AuditEntry[]>> {
+  return api.get<Envelope<AuditEntry[]>>(`/Audit${queryString(params)}`);
+}
+
 export type InviteResult = {
   inviteUrl: string;
   expiresAt: string;
