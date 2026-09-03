@@ -19,6 +19,12 @@ export function LandingFooter() {
             Demo
           </Link>
           <Link
+            href="/pricing"
+            className="rounded-sm underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Pricing
+          </Link>
+          <Link
             href="/help"
             className="rounded-sm underline-offset-4 hover:text-foreground hover:underline"
           >

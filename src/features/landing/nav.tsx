@@ -40,6 +40,9 @@ export function LandingNav() {
           <Button asChild variant="ghost" className="hidden sm:inline-flex">
             <Link href="/demo">Demo</Link>
           </Button>
+          <Button asChild variant="ghost" className="hidden sm:inline-flex">
+            <Link href="/pricing">Pricing</Link>
+          </Button>
           <ThemeToggle className="hidden md:inline-flex" />
           <Button asChild>
             <Link href="/sign-in">Sign in</Link>
