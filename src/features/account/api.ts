@@ -62,6 +62,19 @@ export function listAudit(params: PageParams = {}): Promise<Envelope<AuditEntry[
   return api.get<Envelope<AuditEntry[]>>(`/Audit${queryString(params)}`);
 }
 
+export type FeedbackEntry = {
+  feedbackId: string;
+  userName: string;
+  category: "bug" | "idea" | "question";
+  message: string;
+  page: string | null;
+  createdAt: string;
+};
+
+export function listFeedback(params: PageParams = {}): Promise<Envelope<FeedbackEntry[]>> {
+  return api.get<Envelope<FeedbackEntry[]>>(`/Feedback${queryString(params)}`);
+}
+
 export type InviteResult = {
   inviteUrl: string;
   expiresAt: string;

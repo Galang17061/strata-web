@@ -15,6 +15,7 @@ import { AccessSheet } from "@/features/account/access-sheet";
 import { InviteDialog } from "@/features/account/invite-dialog";
 import { deleteUser, listUsers } from "@/features/account/api";
 import { AuditCard } from "@/features/account/audit-card";
+import { FeedbackCard } from "@/features/account/feedback-card";
 import { ResetPasswordDialog } from "@/features/account/reset-password-dialog";
 import { RoleBadge } from "@/features/account/role-badge";
 import { RolesCard } from "@/features/account/roles-card";
@@ -169,6 +170,7 @@ export function AccountScreen() {
         />
       ) : null}
       <RolesCard />
+      <FeedbackCard />
       <AuditCard />
       <UserSheet open={sheetOpen} onOpenChange={setSheetOpen} user={editing} />
       <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} />
