@@ -1,14 +1,15 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dices } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { StrataLoader } from "@/components/brand/loader";
 import { ReliabilityBadge } from "@/components/reliability/reliability-badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { fetchJob, startRehearsal } from "@/features/simulation/api";
+import { useJobStream, type JobAnnouncement } from "@/features/simulation/use-job-stream";
 import type { Job } from "@/features/simulation/types";
 
 function settled(job: Job | null | undefined): boolean {
@@ -32,14 +33,23 @@ export function RehearsalDialog({ open, onOpenChange, rbdSystemId, systemName }:
     onError: (error: Error) => toast.error("The rehearsal did not start", { description: error.message }),
   });
 
+  const queryClient = useQueryClient();
   const job = useQuery({
     queryKey: ["rehearsal", jobId],
     queryFn: () => fetchJob(jobId ?? ""),
     enabled: Boolean(jobId),
-    refetchInterval: (query) => (settled(query.state.data?.data) ? false : 1500),
+    refetchInterval: (query) => (settled(query.state.data?.data) ? false : 6000),
   });
 
   const current = job.data?.data ?? null;
+  const heard = useCallback(
+    (announcement: JobAnnouncement) => {
+      if (announcement.jobId !== jobId) return;
+      void queryClient.invalidateQueries({ queryKey: ["rehearsal", jobId] });
+    },
+    [jobId, queryClient],
+  );
+  useJobStream(Boolean(jobId) && !settled(current), heard);
   const summary = current?.result ?? null;
   const working = Boolean(jobId) && !settled(current);
 
