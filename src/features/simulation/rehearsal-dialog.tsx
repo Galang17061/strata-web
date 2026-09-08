@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { fetchJob, startRehearsal } from "@/features/simulation/api";
 import { CoverageNote } from "@/features/simulation/coverage-note";
 import { DiagramTable } from "@/features/simulation/diagram-table";
+import { SurvivalChart } from "@/features/simulation/survival-chart";
 import { useJobStream, type JobAnnouncement } from "@/features/simulation/use-job-stream";
 import type { Job } from "@/features/simulation/types";
 
@@ -89,6 +90,7 @@ export function RehearsalDialog({ open, onOpenChange, rbdSystemId, systemName }:
               <DiagramTable diagrams={summary.diagrams} />
             </div>
           ) : null}
+          {summary ? <SurvivalChart diagrams={summary.diagrams} /> : null}
           {summary ? <CoverageNote coverage={summary.coverage} warnings={summary.warnings} /> : null}
         </div>
       </DialogContent>
