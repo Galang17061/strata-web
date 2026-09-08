@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Dices } from "lucide-react";
+import { Dices, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { StrataLoader } from "@/components/brand/loader";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { fetchJob, startRehearsal } from "@/features/simulation/api";
+import { cancelJob, fetchJob, startRehearsal } from "@/features/simulation/api";
 import { CoverageNote } from "@/features/simulation/coverage-note";
 import { CulpritList } from "@/features/simulation/culprit-list";
 import { DiagramTable } from "@/features/simulation/diagram-table";
@@ -34,6 +34,12 @@ export function RehearsalDialog({ open, onOpenChange, rbdSystemId, systemName }:
   const [missionHours, setMissionHours] = useState("1000");
   const [trials, setTrials] = useState("20000");
   const [seed, setSeed] = useState("");
+
+  const callOff = useMutation({
+    mutationFn: () => cancelJob(jobId ?? ""),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["rehearsal", jobId] }),
+    onError: (error: Error) => toast.error("It was already under way", { description: error.message }),
+  });
 
   const start = useMutation({
     mutationFn: () =>
@@ -103,6 +109,11 @@ export function RehearsalDialog({ open, onOpenChange, rbdSystemId, systemName }:
               <p className="text-caption text-foreground-muted">
                 {current?.status === "running" ? "The plant is being run over and over." : "Waiting for a free hand to pick this up."}
               </p>
+              {current?.status === "queued" ? (
+                <Button size="sm" variant="ghost" className="ml-auto" onClick={() => callOff.mutate()} loading={callOff.isPending}>
+                  <X /> Call it off
+                </Button>
+              ) : null}
             </div>
           ) : null}
           {current?.status === "failed" ? (
