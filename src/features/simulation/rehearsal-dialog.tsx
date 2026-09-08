@@ -5,10 +5,10 @@ import { Dices } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { StrataLoader } from "@/components/brand/loader";
-import { ReliabilityBadge } from "@/components/reliability/reliability-badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { fetchJob, startRehearsal } from "@/features/simulation/api";
+import { DiagramTable } from "@/features/simulation/diagram-table";
 import { useJobStream, type JobAnnouncement } from "@/features/simulation/use-job-stream";
 import type { Job } from "@/features/simulation/types";
 
@@ -85,14 +85,7 @@ export function RehearsalDialog({ open, onOpenChange, rbdSystemId, systemName }:
               <p className="text-caption uppercase text-foreground-muted">
                 {summary.diagrams.length} diagram(s) over {summary.missionHours} hours, {summary.trials} runs each
               </p>
-              <div className="flex flex-wrap items-center gap-3">
-                {summary.diagrams.map((diagram) => (
-                  <div key={diagram.hierarchyId} className="flex items-center gap-2">
-                    <span className="text-body-sm">{diagram.hierarchyName || diagram.hierarchyId}</span>
-                    <ReliabilityBadge value={diagram.reliability} size="sm" />
-                  </div>
-                ))}
-              </div>
+              <DiagramTable diagrams={summary.diagrams} />
             </div>
           ) : null}
         </div>
