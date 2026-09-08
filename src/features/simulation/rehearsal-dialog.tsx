@@ -75,7 +75,7 @@ export function RehearsalDialog({ open, onOpenChange, rbdSystemId, systemName }:
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="flex max-h-[90dvh] w-full flex-col overflow-hidden sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Dices className="size-4" /> Rehearse {systemName ?? "this system"}
@@ -85,7 +85,7 @@ export function RehearsalDialog({ open, onOpenChange, rbdSystemId, systemName }:
             tends to last, and which part usually brings it down.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-3">
+        <div className="flex min-h-0 flex-col gap-3 overflow-y-auto pr-1">
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="rehearsal-hours">Mission hours</Label>
