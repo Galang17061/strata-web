@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { fetchJob, startRehearsal } from "@/features/simulation/api";
 import { CoverageNote } from "@/features/simulation/coverage-note";
+import { CulpritList } from "@/features/simulation/culprit-list";
 import { DiagramTable } from "@/features/simulation/diagram-table";
 import { SurvivalChart } from "@/features/simulation/survival-chart";
 import { useJobStream, type JobAnnouncement } from "@/features/simulation/use-job-stream";
@@ -91,6 +92,7 @@ export function RehearsalDialog({ open, onOpenChange, rbdSystemId, systemName }:
             </div>
           ) : null}
           {summary ? <SurvivalChart diagrams={summary.diagrams} /> : null}
+          {summary ? <CulpritList diagrams={summary.diagrams} /> : null}
           {summary ? <CoverageNote coverage={summary.coverage} warnings={summary.warnings} /> : null}
         </div>
       </DialogContent>
