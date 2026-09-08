@@ -73,6 +73,14 @@ export function SurvivalChart({ diagrams }: { diagrams: SimulationDiagram[] }) {
           </ResponsiveContainer>
         ) : null}
       </div>
+      <ul className="flex flex-wrap gap-x-4 gap-y-1">
+        {diagrams.map((diagram, index) => (
+          <li key={diagram.hierarchyId} className="flex items-center gap-1.5 text-caption text-foreground-muted">
+            <span className="size-2 rounded-full" style={{ background: strokes[index % strokes.length] }} />
+            {diagram.hierarchyName || diagram.hierarchyId}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
