@@ -113,7 +113,7 @@ export function RehearsalDialog({ open, onOpenChange, rbdSystemId, systemName }:
               <p className="text-caption uppercase text-foreground-muted">
                 {summary.diagrams.length} diagram(s) over {summary.missionHours} hours, {summary.trials} runs each
               </p>
-              <DiagramTable diagrams={summary.diagrams} />
+              <DiagramTable diagrams={summary.diagrams} missionHours={summary.missionHours} />
             </div>
           ) : null}
           {summary ? <SurvivalChart diagrams={summary.diagrams} /> : null}

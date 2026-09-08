@@ -2,10 +2,11 @@
 
 import { ReliabilityBadge } from "@/components/reliability/reliability-badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { formatLifeSpan } from "@/features/simulation/life-span";
 import type { SimulationDiagram } from "@/features/simulation/types";
-import { formatCount, formatHours, formatReliability } from "@/lib/format";
+import { formatCount, formatReliability } from "@/lib/format";
 
-export function DiagramTable({ diagrams }: { diagrams: SimulationDiagram[] }) {
+export function DiagramTable({ diagrams, missionHours }: { diagrams: SimulationDiagram[]; missionHours: number }) {
   return (
     <Table>
       <caption className="sr-only">What each diagram scored across the rehearsal</caption>
@@ -34,8 +35,8 @@ export function DiagramTable({ diagrams }: { diagrams: SimulationDiagram[] }) {
                 </span>
               </div>
             </TableCell>
-            <TableCell className="text-right tabular-nums">{formatHours(diagram.medianLife)}</TableCell>
-            <TableCell className="text-right tabular-nums">{formatHours(diagram.b10Life)}</TableCell>
+            <TableCell className="text-right tabular-nums">{formatLifeSpan(diagram.medianLife, missionHours)}</TableCell>
+            <TableCell className="text-right tabular-nums">{formatLifeSpan(diagram.b10Life, missionHours)}</TableCell>
           </TableRow>
         ))}
       </TableBody>
