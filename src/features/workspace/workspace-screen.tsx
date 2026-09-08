@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellRing, FileText, History, Info, PanelLeft, PanelRight, RefreshCw, Save, Sparkles } from "lucide-react";
+import { BellRing, Dices, FileText, History, Info, PanelLeft, PanelRight, RefreshCw, Save, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/brand/empty-state";
@@ -38,6 +38,7 @@ import { ComponentSheet } from "@/features/workspace/component-sheet";
 import { ContextPanel } from "@/features/workspace/context-panel";
 import { AddComponentDialog, HierarchyDialog } from "@/features/workspace/dialogs";
 import { OptimizationStudio } from "@/features/optimization/optimization-studio";
+import { RehearsalDialog } from "@/features/simulation/rehearsal-dialog";
 import { PlotDialog } from "@/features/workspace/plot/plot-dialog";
 import { RecalculateDialog } from "@/features/workspace/recalculate-dialog";
 import {
@@ -131,6 +132,7 @@ export function WorkspaceScreen() {
   const [versionsOpen, setVersionsOpen] = useState(false);
   const [thresholdOpen, setThresholdOpen] = useState(false);
   const [optimizeOpen, setOptimizeOpen] = useState(false);
+  const [rehearsalOpen, setRehearsalOpen] = useState(false);
   const [plotOpen, setPlotOpen] = useState(false);
   const [recalculating, setRecalculating] = useState(false);
   const [treeWidth, setTreeWidth] = useState(280);
@@ -436,6 +438,9 @@ export function WorkspaceScreen() {
                 <FileText /> Report
               </a>
             </Button>
+            <Button size="sm" variant="secondary" onClick={() => setRehearsalOpen(true)} disabled={dirty}>
+              <Dices /> Rehearse
+            </Button>
             <Button size="sm" variant="secondary" onClick={() => setOptimizeOpen(true)} disabled={dirty} data-tour="optimize">
               <Sparkles /> Optimize
             </Button>
@@ -535,6 +540,7 @@ export function WorkspaceScreen() {
 
       <PlotDialog open={plotOpen} onOpenChange={setPlotOpen} tree={treeData} level={activeLevel} />
       <OptimizationStudio open={optimizeOpen} onOpenChange={setOptimizeOpen} rbdSystemId={rbdSystemId} systemName={treeData?.systemName ?? null} />
+      <RehearsalDialog open={rehearsalOpen} onOpenChange={setRehearsalOpen} rbdSystemId={rbdSystemId} systemName={treeData?.systemName ?? null} />
       <VersionsSheet open={versionsOpen} onOpenChange={setVersionsOpen} rbdSystemId={rbdSystemId} />
       <ThresholdDialog open={thresholdOpen} onOpenChange={setThresholdOpen} rbdSystemId={rbdSystemId} />
       <RecalculateDialog
