@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { StrataLoader } from "@/components/brand/loader";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { fetchJob, startRehearsal } from "@/features/simulation/api";
 import { CoverageNote } from "@/features/simulation/coverage-note";
 import { CulpritList } from "@/features/simulation/culprit-list";
@@ -29,9 +31,18 @@ type RehearsalDialogProps = {
 
 export function RehearsalDialog({ open, onOpenChange, rbdSystemId, systemName }: RehearsalDialogProps) {
   const [jobId, setJobId] = useState<string | null>(null);
+  const [missionHours, setMissionHours] = useState("1000");
+  const [trials, setTrials] = useState("20000");
+  const [seed, setSeed] = useState("");
 
   const start = useMutation({
-    mutationFn: () => startRehearsal(rbdSystemId, { missionHours: 1000, trials: 20000, curvePoints: 40 }),
+    mutationFn: () =>
+      startRehearsal(rbdSystemId, {
+        missionHours: Number(missionHours) || 0,
+        trials: Number(trials) || 0,
+        seed: seed.trim() === "" ? undefined : Number(seed),
+        curvePoints: 40,
+      }),
     onSuccess: (envelope) => setJobId(envelope.data.jobId),
     onError: (error: Error) => toast.error("The rehearsal did not start", { description: error.message }),
   });
@@ -69,6 +80,20 @@ export function RehearsalDialog({ open, onOpenChange, rbdSystemId, systemName }:
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="rehearsal-hours">Mission hours</Label>
+              <Input id="rehearsal-hours" inputMode="numeric" value={missionHours} onChange={(event) => setMissionHours(event.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="rehearsal-trials">Runs</Label>
+              <Input id="rehearsal-trials" inputMode="numeric" value={trials} onChange={(event) => setTrials(event.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="rehearsal-seed">Seed</Label>
+              <Input id="rehearsal-seed" inputMode="numeric" placeholder="Any" value={seed} onChange={(event) => setSeed(event.target.value)} />
+            </div>
+          </div>
           <Button onClick={() => start.mutate()} loading={start.isPending || working} className="self-start">
             <Dices /> {summary ? "Rehearse again" : "Start the rehearsal"}
           </Button>
